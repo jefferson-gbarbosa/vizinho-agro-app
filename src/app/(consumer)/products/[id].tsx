@@ -2,6 +2,7 @@ import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useCart } from '@/contexts/CartContext';
 import api from '@/services/api';
 
 type Producer = {
@@ -17,6 +18,7 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [isInCart, setIsInCart] = useState(false);
   const [producer, setProducer] = useState<Producer | null>(null);
+  const { addItem } = useCart();
 
   useEffect(() => {
       const fetchProducer = async () => {
@@ -45,8 +47,15 @@ const ProductDetail = () => {
 
   const handleAddToCart = () => {
     setIsInCart(true);
-    // Aqui você implementaria a lógica para adicionar ao carrinho global
-    // usando context, redux ou passando a função como prop
+    if (!producer) return;
+
+    addItem({
+      id: producer.id,
+      name: producer.type,
+      price: producer.price,
+      quantity,
+      farmer: producer.name,
+    });
   };
 
   const increaseQuantity = () => {

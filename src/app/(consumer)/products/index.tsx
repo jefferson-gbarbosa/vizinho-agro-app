@@ -21,7 +21,7 @@ const ProductsPage = () => {
           const data: Producer[] = res.data.map((item: any) => ({
             id: String(item.id),
             name: item.nome || "Produtor sem nome",
-           type: item.tipo || '',
+            type: item.tipo || '',
             price: item.preco || 0,  
         }));
           

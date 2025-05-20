@@ -46,9 +46,10 @@ export default function ConfirmationScreen() {
       </View>
 
       <TouchableOpacity 
-        style={[styles.button, { backgroundColor: '#FFA000', marginBottom: 16 }]}
+        style={[styles.button, { backgroundColor: '#FFA000', marginBottom: 46 }]}
         onPress={() => router.push('/(consumer)/dashboard-consumer')}
       >
+        <Text>Voltar para a Dashboard</Text>
       </TouchableOpacity>
     </View>
   );

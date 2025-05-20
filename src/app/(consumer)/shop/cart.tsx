@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert} from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert, SafeAreaView} from 'react-native';
 import { useRouter } from 'expo-router';
 import CartItem from '@/components/CartItem';
 import { useCart } from '@/contexts/CartContext';
@@ -35,6 +35,7 @@ export default function CartScreen() {
   };
 
   return (
+    <SafeAreaView style={{flex: 1, marginBlock:40}}>
       <View style={styles.container}>
       <ScrollView style={styles.itemsContainer}>
         {cartItems.length > 0 ? (
@@ -98,6 +99,8 @@ export default function CartScreen() {
         <Text style={styles.checkoutButtonText}>Finalizar Compra</Text>
       </TouchableOpacity>
     </View>
+    </SafeAreaView>
+    
   );
 }
 
