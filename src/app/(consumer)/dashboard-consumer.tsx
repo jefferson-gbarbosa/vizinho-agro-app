@@ -16,7 +16,6 @@ type Producer = {
   price: number;
   image: string | null;
   distance?: string;
-  rating?: number;
   products?: number;
 };
 
@@ -213,10 +212,6 @@ const ConsumerDashboard = () => {
                       <Text style={styles.farmerName}>{farmer.name}</Text>
                       <View style={styles.farmerDetails}>
                         <Text style={styles.farmerDistance}>{farmer.distance}</Text>
-                        <View style={styles.rating}>
-                          <MaterialCommunityIcons name="star" size={16} color="#FFD700" />
-                          <Text style={styles.ratingText}>{farmer.rating}</Text>
-                        </View>
                       </View>
                     </View>
                   </TouchableOpacity>
@@ -379,15 +374,6 @@ const styles = StyleSheet.create({
     color: '#666',
     fontSize: 14,
     marginRight: 15,
-  },
-  rating: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  ratingText: {
-    color: '#666',
-    fontSize: 14,
-    marginLeft: 4,
   },
 });
 

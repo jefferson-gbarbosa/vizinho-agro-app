@@ -10,7 +10,6 @@ type Producer = {
   latitude: number;
   longitude: number;
   distance: string;
-  rating: number;
   products: number;
 };
 
@@ -74,10 +73,6 @@ const FarmersList = () => {
               <Text style={styles.farmerName}>{item.name}</Text>
               <View style={styles.farmerDetails}>
                 <Text style={styles.farmerDistance}>{item.distance}</Text>
-                <View style={styles.rating}>
-                  <MaterialCommunityIcons name="star" size={16} color="#FFD700" />
-                  <Text style={styles.ratingText}>{item.rating}</Text>
-                </View>
                 <Text style={styles.productsCount}>{item.products} produtos</Text>
               </View>
             </View>
@@ -140,16 +135,6 @@ const styles = StyleSheet.create({
     color: '#666',
     fontSize: 14,
     marginRight: 15,
-  },
-  rating: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 15,
-  },
-  ratingText: {
-    color: '#666',
-    fontSize: 14,
-    marginLeft: 4,
   },
   productsCount: {
     color: '#4a7c59',
