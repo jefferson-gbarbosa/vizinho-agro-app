@@ -235,7 +235,7 @@ export default function PerfilAgricultor() {
       {/* Rodapé */}
       <TouchableOpacity 
         style={styles.logoutButton}
-        onPress={() => handleLogout}
+        onPress={handleLogout}
       >
         <MaterialCommunityIcons name="logout" size={20} color="#E57373" />
         <Text style={styles.logoutText}>Sair da conta</Text>

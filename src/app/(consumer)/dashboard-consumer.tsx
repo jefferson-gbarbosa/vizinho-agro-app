@@ -139,7 +139,7 @@ const ConsumerDashboard = () => {
             {locationText || 'Carregando localização...'}
           </Text>
         </View>
-        <TouchableOpacity onPress={() => handleLogout}>
+        <TouchableOpacity onPress={handleLogout}>
           <View style={styles.profilePlaceholder}>
               <MaterialCommunityIcons name="logout" size={32} color="#E57373" />
           </View>

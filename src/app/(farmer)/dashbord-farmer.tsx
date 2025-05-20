@@ -154,7 +154,6 @@ export default function DashboardAgricultor() {
       <View style={styles.quickActions}>
         <Text style={styles.sectionTitle}>Ações Rápidas</Text>
         <View style={styles.actionsRow}>
-          <ActionButton icon="cart" label="Pedidos" onPress={() => router.push('/(farmer)/pedido/orders')} />
           <ActionButton icon="plus" label="Novo Produto" onPress={() => router.push('/(farmer)/products/new')} />
         </View>
       </View>
@@ -195,7 +194,7 @@ export default function DashboardAgricultor() {
 
 
       {/* Logout */}
-      <TouchableOpacity onPress={() => handleLogout} style={styles.logoutButton}>
+      <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
         <MaterialCommunityIcons name="logout" size={20} color="#8D6E63" />
         <Text style={styles.logoutText}>Sair da conta</Text>
       </TouchableOpacity>
