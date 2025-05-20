@@ -42,7 +42,7 @@ export default function DashboardAgricultor() {
   useEffect(() => {
     const fetchProducers = async () => {
       try {
-        const res = await api.get<Producer[]>('http://192.168.0.117:3333/location-producers');
+        const res = await api.get<Producer[]>('/location-producers');
         const data = res.data.map((p: any) => ({
           id: p.id,
           nome: p.nome || "Produtor sem nome",
@@ -106,7 +106,7 @@ export default function DashboardAgricultor() {
     };
 
     try {
-      await api.put(`http://192.168.0.117:3333/producers/${selectedProducer.id}/metrics`, updated);
+      await api.put(`/producers/${selectedProducer.id}/metrics`, updated);
       setMetrics(updated);
       Alert.alert('Sucesso', 'Métrica atualizada com sucesso!');
     } catch (error) {
