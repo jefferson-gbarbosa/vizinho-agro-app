@@ -3,6 +3,7 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Dimensions, Modal
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Producer = {
   id: string;
@@ -117,7 +118,15 @@ export default function DashboardAgricultor() {
     setEditingKey(null);
     setEditingValue('');
   };
-
+  const handleLogout = async () => {
+    try{
+        await AsyncStorage.removeItem('producerToken');
+        router.replace('/');
+      } catch (error) {
+        Alert.alert('Erro ao sair', 'Não foi possível realizar o logout.');
+        console.error('Erro ao fazer logout:', error);
+      }
+   };
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {/* Cabeçalho */}
@@ -127,7 +136,6 @@ export default function DashboardAgricultor() {
           <MaterialCommunityIcons name="account-circle" size={40} color="#2E7D32" />
         </TouchableOpacity>
       </View>
-
       {/* Métricas */}
       <View style={styles.metricsContainer}>
         {Object.entries(metrics).map(([key, value]) => (
@@ -150,7 +158,6 @@ export default function DashboardAgricultor() {
           <ActionButton icon="plus" label="Novo Produto" onPress={() => router.push('/(farmer)/products/new')} />
         </View>
       </View>
-
       {/* Modal */}
       <Modal visible={modalVisible} animationType="slide" transparent onRequestClose={() => setModalVisible(false)}>
         <View style={styles.modalOverlay}>
@@ -188,7 +195,7 @@ export default function DashboardAgricultor() {
 
 
       {/* Logout */}
-      <TouchableOpacity style={styles.logoutButton}>
+      <TouchableOpacity onPress={() => handleLogout} style={styles.logoutButton}>
         <MaterialCommunityIcons name="logout" size={20} color="#8D6E63" />
         <Text style={styles.logoutText}>Sair da conta</Text>
       </TouchableOpacity>

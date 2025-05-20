@@ -1,6 +1,7 @@
 import Button from '@/components/Button';
 import Input from '@/components/Input';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
@@ -134,6 +135,15 @@ export default function PerfilAgricultor() {
       setFormData({ ...formData, foto: result.assets[0].uri });
     }
   };
+  const handleLogout = async () => {
+    try{
+        await AsyncStorage.removeItem('producerToken');
+        router.replace('/');
+      } catch (error) {
+        Alert.alert('Erro ao sair', 'Não foi possível realizar o logout.');
+        console.error('Erro ao fazer logout:', error);
+      }
+   };
 
   if (!selectedProducer) {
     return (
@@ -224,9 +234,7 @@ export default function PerfilAgricultor() {
       {/* Rodapé */}
       <TouchableOpacity 
         style={styles.logoutButton}
-        onPress={() => {
-          router.replace('/');
-        }}
+        onPress={() => handleLogout}
       >
         <MaterialCommunityIcons name="logout" size={20} color="#E57373" />
         <Text style={styles.logoutText}>Sair da conta</Text>

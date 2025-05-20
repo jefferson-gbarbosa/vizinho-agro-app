@@ -4,6 +4,7 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Image, Alert, Act
 import { MaterialCommunityIcons} from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 
 type Producer = {
@@ -102,8 +103,8 @@ const ConsumerDashboard = () => {
             price: item.preco || 0,
             image: item.foto || null,
             distance: `${distanceKm.toFixed(2)} km`,
-            rating: 4.5, // Pode ser ajustado futuramente com nota real
-            products: 4, // Também pode ser dinâmico depois
+            rating: 4.5,
+            products: 4, 
           };
         });
         
@@ -118,6 +119,16 @@ const ConsumerDashboard = () => {
     fetchFarmers();
   }, []);
 
+  const handleLogout = async () => {
+  try {
+      await AsyncStorage.removeItem('consumerToken');
+      router.replace('/');
+    } catch (error) {
+      Alert.alert('Erro ao sair', 'Não foi possível realizar o logout.');
+      console.error('Erro ao fazer logout:', error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -129,7 +140,7 @@ const ConsumerDashboard = () => {
             {locationText || 'Carregando localização...'}
           </Text>
         </View>
-        <TouchableOpacity onPress={() =>  router.replace('/')}>
+        <TouchableOpacity onPress={() => handleLogout}>
           <View style={styles.profilePlaceholder}>
               <MaterialCommunityIcons name="logout" size={32} color="#E57373" />
           </View>
