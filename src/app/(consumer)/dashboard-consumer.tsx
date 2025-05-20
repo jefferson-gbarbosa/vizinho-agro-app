@@ -3,9 +3,9 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Image, Alert, ActivityIndicator } from 'react-native';
 import { MaterialCommunityIcons} from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
+import api from '@/services/api';
 
 type Producer = {
   id: string;
@@ -42,7 +42,7 @@ const ConsumerDashboard = () => {
   useEffect(() => {
     (async () => {
       try {
-      const res = await axios.get('http://192.168.0.117:3333/consumers');
+      const res = await api.get('/consumers');
       const { nome } = res.data[0]
       setUserName(nome)
       } catch (error) {
@@ -86,7 +86,7 @@ const ConsumerDashboard = () => {
         const location = await Location.getCurrentPositionAsync({});
         const userLat = location.coords.latitude;
         const userLon = location.coords.longitude;
-        const res = await axios.get<Producer[]>('http://192.168.0.117:3333/location-producers');
+        const res = await api.get<Producer[]>('/location-producers');
 
         const data: Producer[] = res.data.map((item: any) => {
           const lat = Number(item.latitude);

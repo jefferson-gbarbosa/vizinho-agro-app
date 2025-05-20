@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
 import { useRouter } from 'expo-router';
+import api from '@/services/api';
 
 export default function SplashScreen() {
   const router = useRouter();
@@ -14,7 +14,7 @@ export default function SplashScreen() {
 
     try {
       if (consumerToken) {
-        const res = await axios.get('http://192.168.0.117:3333/me', {
+        const res = await api.get('http://192.168.0.117:3333/me', {
           headers: { Authorization: `Bearer ${consumerToken}` },
         });
 
@@ -25,7 +25,7 @@ export default function SplashScreen() {
       }
 
       if (producerToken) {
-        const res = await axios.get('http://192.168.0.117:3333/me', {
+        const res = await api.get('http://192.168.0.117:3333/me', {
           headers: { Authorization: `Bearer ${producerToken}` },
         });
 

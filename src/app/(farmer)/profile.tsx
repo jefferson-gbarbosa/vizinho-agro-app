@@ -1,5 +1,6 @@
 import Button from '@/components/Button';
 import Input from '@/components/Input';
+import api from '@/services/api';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -49,7 +50,7 @@ export default function PerfilAgricultor() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await axios.get<Producer[]>('http://192.168.0.117:3333/producers');
+        const res = await api.get<Producer[]>('/producers');
         const data: Producer[] = res.data.map((p: any) => ({
           id: p.id,
           nome: p.nome || "Produtor sem nome",
@@ -80,7 +81,7 @@ export default function PerfilAgricultor() {
     if (selectedProducer?.id) {
       const fetchMetrics = async () => {
         try {
-          const metricsRes = await axios.get(`http://192.168.0.117:3333/producers/${selectedProducer.id}/metrics`);
+          const metricsRes = await axios.get(`/producers/${selectedProducer.id}/metrics`);
           if (metricsRes.data.length > 0) {
             const m = metricsRes.data[0];
             setMetrics({
@@ -103,7 +104,7 @@ export default function PerfilAgricultor() {
     
     try {
       // Atualizar dados do produtor
-      await axios.put(`http://192.168.0.117:3333/producers/${selectedProducer.id}`, formData);
+      await axios.put(`/producers/${selectedProducer.id}`, formData);
       setProducers(producers.map(p => 
         p.id === selectedProducer.id ? { ...p, ...formData } : p
       ));

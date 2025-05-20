@@ -14,11 +14,11 @@ import {
   ActivityIndicator, 
   StyleSheet 
 } from 'react-native';
-import axios from 'axios';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import api from '@/services/api';
 
 const loginFarmerSchema = z.object({
   telefone: z
@@ -66,7 +66,7 @@ export default function LoginFarmerScreen() {
       return;
     }
     try {
-      const res = await axios.post('http://192.168.0.117:3333/login-producer', {
+      const res = await api.post('/login-producer', {
         telefone: phoneDigits,
         senha: data.senha,
       })

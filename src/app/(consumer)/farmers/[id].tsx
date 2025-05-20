@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import axios from 'axios';
+import api from '@/services/api';
 
 type Product = {
   id: number;
@@ -26,7 +26,7 @@ const FarmerDetails = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await axios.get(`http://192.168.0.117:3333/products/${id}`);
+        const response = await api.get(`/products/${id}`);
         setProduct(response.data);
       } catch (err) {
         console.error(err);

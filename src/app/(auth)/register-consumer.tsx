@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import axios from 'axios';
+import api from '@/services/api';
 
 export default function ConsumerRegisterScreen(){
   const router = useRouter();
@@ -20,7 +20,7 @@ export default function ConsumerRegisterScreen(){
     }
     try {
       console.log('Dados enviados:', formData);
-      const res = await axios.post('http://192.168.0.117:3333/consumer',{formData})
+      const res = await api.post('/consumer',{formData})
       if (res.status === 200) {
         router.push('/(consumer)/map');
 			}

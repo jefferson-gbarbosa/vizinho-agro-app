@@ -4,7 +4,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
-import axios from 'axios';
+import api from '@/services/api';
 
 export default function SearchScreen() {
   const router = useRouter();
@@ -55,7 +55,7 @@ export default function SearchScreen() {
     if (!query.trim()) return;
     setLoading(true);
     try {
-      const response = await axios.get('http://192.168.0.117:3333/products', {
+      const response = await api.get('/products', {
         params: { search: query },
       });
       setProducts(response.data);

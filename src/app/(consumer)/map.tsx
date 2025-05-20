@@ -6,7 +6,7 @@ import * as Location from "expo-location";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import MapViewCluster from "react-native-map-clustering";
 import { Ionicons } from "@expo/vector-icons";
-import axios from "axios";
+import api from "@/services/api";
 
 type Producer = {
   id: string;
@@ -91,7 +91,7 @@ const MapViewScreen = () => {
   const loadProducers = async (userLat: number, userLng: number) => {
    
     try {
-      const res = await axios.get<Producer[]>('http://192.168.0.117:3333/location-producers');
+      const res = await api.get<Producer[]>('/location-producers');
       const data: Producer[] = res.data.map((p: any) => ({
           id: String(p.id),
           name: p.nome || "Produtor sem nome",

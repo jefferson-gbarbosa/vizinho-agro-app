@@ -2,7 +2,7 @@ import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import axios from 'axios';
+import api from '@/services/api';
 
 type Producer = {
   id: string;
@@ -21,7 +21,7 @@ const ProductDetail = () => {
   useEffect(() => {
       const fetchProducer = async () => {
         try {
-         const res = await axios.get<Producer[]>('http://192.168.0.117:3333/location-producers');
+         const res = await api.get<Producer[]>('/location-producers');
   
           const data: Producer[] = res.data.map((item: any) => ({
             id: String(item.id),

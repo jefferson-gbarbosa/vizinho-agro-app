@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, Alert } from "react-native";
 import { Picker } from '@react-native-picker/picker';
-import axios from "axios";
 import * as Location from 'expo-location';
+import api from "@/services/api";
 
 export default function ConsumerFiltersScreen(){
  
@@ -48,7 +48,7 @@ export default function ConsumerFiltersScreen(){
       if (longitude !== null) params.longitude = longitude.toString();
 
       const query = new URLSearchParams(params).toString();
-      const response = await axios.get(`http://192.168.0.117:3333/filter?${query}`);
+      const response = await api.get(`/filter?${query}`);
      
       setResults(response.data);
     } catch (error: any) {

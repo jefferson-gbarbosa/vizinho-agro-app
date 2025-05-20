@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Dimensions, Modal, TextInput, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import api from '@/services/api';
 
 type Producer = {
   id: string;
@@ -42,7 +42,7 @@ export default function DashboardAgricultor() {
   useEffect(() => {
     const fetchProducers = async () => {
       try {
-        const res = await axios.get<Producer[]>('http://192.168.0.117:3333/location-producers');
+        const res = await api.get<Producer[]>('http://192.168.0.117:3333/location-producers');
         const data = res.data.map((p: any) => ({
           id: p.id,
           nome: p.nome || "Produtor sem nome",
@@ -62,7 +62,7 @@ export default function DashboardAgricultor() {
 
   const fetchMetrics = async () => {
     try {
-      const res = await axios.get(`http://192.168.0.117:3333/producers/${selectedProducer.id}/metrics`);
+      const res = await api.get(`/producers/${selectedProducer.id}/metrics`);
       const m = res.data[0];
 
       if (!m) {
@@ -106,7 +106,7 @@ export default function DashboardAgricultor() {
     };
 
     try {
-      await axios.put(`http://192.168.0.117:3333/producers/${selectedProducer.id}/metrics`, updated);
+      await api.put(`http://192.168.0.117:3333/producers/${selectedProducer.id}/metrics`, updated);
       setMetrics(updated);
       Alert.alert('Sucesso', 'Métrica atualizada com sucesso!');
     } catch (error) {

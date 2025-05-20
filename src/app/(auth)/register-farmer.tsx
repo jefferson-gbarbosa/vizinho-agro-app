@@ -1,6 +1,6 @@
 import Button from '@/components/Button';
+import api from '@/services/api';
 import { MaterialIcons } from '@expo/vector-icons';
-import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
@@ -218,7 +218,7 @@ export default function CadastroAgricultor({ navigation }: { navigation: any }) 
     setLoading(true);
     try {
       console.log('Dados enviados:', formData);
-      const res = await axios.post('http://192.168.0.117:3333/producer',{formData})
+      const res = await api.post('/producer',{formData})
       if (res.status === 200) {
 				router.replace('/(farmer)/dashbord-farmer');
 			}
