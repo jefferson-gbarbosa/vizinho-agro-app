@@ -77,12 +77,6 @@ const ConsumerDashboard = () => {
   useEffect(() => {
     const fetchFarmers = async () => {
       try {
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-          Alert.alert('Permissão negada', 'É necessário permitir o acesso à localização.');
-          return;
-        }
-
         const location = await Location.getCurrentPositionAsync({});
         const userLat = location.coords.latitude;
         const userLon = location.coords.longitude;

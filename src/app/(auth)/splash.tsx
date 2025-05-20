@@ -1,20 +1,28 @@
 import React, { useEffect } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import api from '@/services/api';
+import * as Location from 'expo-location';
 
 export default function SplashScreen() {
   const router = useRouter();
 
   useEffect(() => {
   const verifyAuth = async () => {
-    const consumerToken = await AsyncStorage.getItem('consumerToken');
-    const producerToken = await AsyncStorage.getItem('producerToken');
-
     try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+          Alert.alert(
+            "Permissão de localização",
+            "Precisamos da sua localização para mostrar produtores próximos."
+          );
+        return;
+      }
+      const consumerToken = await AsyncStorage.getItem('consumerToken');
+      const producerToken = await AsyncStorage.getItem('producerToken');
       if (consumerToken) {
-        const res = await api.get('http://192.168.0.117:3333/me', {
+        const res = await api.get('/me', {
           headers: { Authorization: `Bearer ${consumerToken}` },
         });
 
@@ -25,21 +33,18 @@ export default function SplashScreen() {
       }
 
       if (producerToken) {
-        const res = await api.get('http://192.168.0.117:3333/me', {
+        const res = await api.get('/me', {
           headers: { Authorization: `Bearer ${producerToken}` },
         });
 
         if (res.status === 200) {
-          router.replace('/(farmer)/dashbord-farmer'); // ou sua tela principal do produtor
+          router.replace('/(farmer)/dashbord-farmer'); 
           return;
         }
       }
-
-      // Nenhum token válido
       router.replace('/(auth)/home');
     } catch (error) {
-      // Erro na verificação de token
-      console.log(error)
+      console.error('Erro na verificação de autenticação ou localização:', error);
       router.replace('/(auth)/home');
     }
   };

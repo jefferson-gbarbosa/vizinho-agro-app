@@ -30,12 +30,6 @@ const MapViewScreen = () => {
   useEffect(() => {
     (async () => {
       try {
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== "granted") {
-          alert("Permissão de localização negada");
-          return;
-        }
-
         const loc = await Location.getCurrentPositionAsync({});
         setLocation(loc.coords);
         loadProducers(loc.coords.latitude, loc.coords.longitude);
