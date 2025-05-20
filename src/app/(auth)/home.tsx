@@ -4,7 +4,7 @@ import {
   Text, 
   StyleSheet, 
   TouchableOpacity, 
-  Image
+  Image,
 } from 'react-native';
 import { router } from 'expo-router';
 
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   },
   rodape: {
     position: 'absolute',
-    bottom: 20,
+    bottom: 90,
     color: '#8D6E63',
     fontSize: 14,
   },

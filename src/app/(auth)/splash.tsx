@@ -82,6 +82,7 @@ export default function SplashScreen() {
     verifyAuth();
   }, [verifyAuth]);
 
+  
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (!loading && !error && permissionStatus === 'granted') {

@@ -1,4 +1,4 @@
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import api from '@/services/api';
@@ -36,7 +36,8 @@ const ProductsPage = () => {
 
  
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={{flex:1}}>
+      <View style={styles.container}>
       <Text style={styles.title}>Todos os Produtos</Text>
       <FlatList
         data={farmers}
@@ -52,7 +53,9 @@ const ProductsPage = () => {
           </TouchableOpacity>
         )}
       />
-    </View>
+      </View>
+    </SafeAreaView>
+    
   );
 };
 
@@ -64,7 +67,8 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 16,
+    marginBottom: 10,
+    marginTop: 50
   },
   productCard: {
     padding: 16,

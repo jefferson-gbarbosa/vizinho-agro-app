@@ -119,13 +119,14 @@ const styles = StyleSheet.create({
   container: { 
     flexGrow: 1, 
     padding: 20, 
-    backgroundColor: "#FAFAFA" 
+    backgroundColor: "#FAFAFA" ,
+    marginTop: 50
   },
   label: { 
-    marginBottom: 8, 
+    marginBottom: 20, 
     fontWeight: "600",
     color: "#263238",
-    fontSize: 16
+    fontSize: 18,
   },
   input: { 
     borderWidth: 1, 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Dimensions, Modal, TextInput, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Dimensions, Modal, TextInput, Alert, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -128,7 +128,8 @@ export default function DashboardAgricultor() {
       }
    };
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <SafeAreaView style={{paddingTop:20}}>
+      <ScrollView contentContainerStyle={styles.container}>
       {/* Cabeçalho */}
       <View style={styles.header}>
         <Text style={styles.welcomeText}>Bem-vindo, {selectedProducer?.nome || 'Produtor'}!</Text>
@@ -198,7 +199,8 @@ export default function DashboardAgricultor() {
         <MaterialCommunityIcons name="logout" size={20} color="#8D6E63" />
         <Text style={styles.logoutText}>Sair da conta</Text>
       </TouchableOpacity>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -241,6 +243,7 @@ const styles = StyleSheet.create({
   container: {
     height: '100%',
     padding: 20,
+    marginTop:10,
     backgroundColor: '#FAFAFA',
   },
   header: {

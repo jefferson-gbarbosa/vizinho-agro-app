@@ -8,6 +8,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type Producer = {
   id: number;
@@ -155,7 +156,8 @@ export default function PerfilAgricultor() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <SafeAreaView>
+      <ScrollView contentContainerStyle={styles.container}>
       {/* Cabeçalho */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
@@ -240,7 +242,8 @@ export default function PerfilAgricultor() {
         <MaterialCommunityIcons name="logout" size={20} color="#E57373" />
         <Text style={styles.logoutText}>Sair da conta</Text>
       </TouchableOpacity>
-    </ScrollView>
+     </ScrollView>
+    </SafeAreaView>
   );
 }
 

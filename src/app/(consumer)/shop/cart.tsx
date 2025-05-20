@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert} from 'react-native';
 import { useRouter } from 'expo-router';
 import CartItem from '@/components/CartItem';
 import { useCart } from '@/contexts/CartContext';
@@ -35,7 +35,7 @@ export default function CartScreen() {
   };
 
   return (
-    <View style={styles.container}>
+      <View style={styles.container}>
       <ScrollView style={styles.itemsContainer}>
         {cartItems.length > 0 ? (
           cartItems.map(item => (

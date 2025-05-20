@@ -1,6 +1,6 @@
 // app/(consumer)/dashboard.tsx
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Image, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Image, Alert, ActivityIndicator, SafeAreaView } from 'react-native';
 import { MaterialCommunityIcons} from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -123,7 +123,8 @@ const ConsumerDashboard = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={{flex: 1}}>
+      <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <View>
@@ -214,7 +215,8 @@ const ConsumerDashboard = () => {
           </View>
         </View>
       </ScrollView>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 };
 

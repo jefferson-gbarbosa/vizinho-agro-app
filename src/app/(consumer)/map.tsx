@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
   },
   filterButton: {
     position: "absolute",
-    bottom: 32,
+    bottom: 80,
     alignSelf: "center",
     backgroundColor: "#2E7D32",
     paddingVertical: 16,
