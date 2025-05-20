@@ -1,23 +1,23 @@
-import React, { useState } from 'react';
-import {
-  View, 
-  Text, 
-  TextInput, 
-  Alert, 
-  StyleSheet, 
-  TouchableOpacity, 
-  Image,
-  ActivityIndicator,
-  ScrollView, 
-  KeyboardAvoidingView, 
-  Platform
-} from 'react-native';
+import Button from '@/components/Button';
+import { MaterialIcons } from '@expo/vector-icons';
+import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
-import { MaterialIcons } from '@expo/vector-icons';
-import { NextButton } from '@/components/NextButton/index'
 import { useRouter } from 'expo-router';
-import axios from 'axios';
+import React, { useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
 
 interface Coordenadas {
   latitude: number;
@@ -79,7 +79,7 @@ const Screen1 = ({ formData, setFormData, getLocation, validateStep1 }: {
         </Text>
       </TouchableOpacity>
       <View style={styles.buttonContainer}>
-          <NextButton  
+          <Button  
               title="Próximo"
               onPress={validateStep1}
               disabled={!formData.nome || !formData.telefone}
@@ -118,8 +118,8 @@ const Screen2 = ({ formData, setFormData, goBack, goNext }: {
     ))}
     
     <View style={styles.buttonContainer}>
-      <NextButton title="Voltar" onPress={goBack}  backgroundColor="#8D6E63" />
-      <NextButton title="Próximo" onPress={goNext} disabled={!formData.tipoProducao} backgroundColor="#2E7D32" />
+      <Button title="Voltar" onPress={goBack}  backgroundColor="#8D6E63" />
+      <Button title="Próximo" onPress={goNext} disabled={!formData.tipoProducao} backgroundColor="#2E7D32" />
     </View>
   </View>
 );
@@ -154,8 +154,8 @@ const Screen3 = ({ formData, pickImage, pickDocument, goBack, handleSubmit }: {
     </TouchableOpacity>
 
     <View style={styles.buttonContainer}>
-      <NextButton title="Voltar" onPress={goBack}  backgroundColor="#8D6E63" />
-      <NextButton title="Finalizar Cadastro" onPress={handleSubmit} backgroundColor="#2E7D32" />
+      <Button title="Voltar" onPress={goBack}  backgroundColor="#8D6E63" />
+      <Button title="Finalizar Cadastro" onPress={handleSubmit} backgroundColor="#2E7D32" />
     </View>
   </View>
 );
