@@ -23,7 +23,6 @@ const ConsumerDashboard = () => {
   const router = useRouter();
   const [farmers, setFarmers] = useState<Producer[]>([]);
   const [locationText, setLocationText] = useState('');
-  const [userName, setUserName] = useState('');
 
   const [isLoadingFarmers, setIsLoadingFarmers] = useState(true);
 
@@ -39,18 +38,6 @@ const ConsumerDashboard = () => {
     return R * c;
   }
 
-  useEffect(() => {
-    (async () => {
-      try {
-      const res = await api.get('/consumers');
-      const { nome } = res.data[0]
-      setUserName(nome)
-      } catch (error) {
-        console.error('Erro ao buscar consumidor:', error);
-      }
-    })();
-  }, []);
-  
   useEffect(() => {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -81,7 +68,8 @@ const ConsumerDashboard = () => {
         const userLat = location.coords.latitude;
         const userLon = location.coords.longitude;
         const res = await api.get<Producer[]>('/location-producers');
-
+        console.log(res.data)
+       
         const data: Producer[] = res.data.map((item: any) => {
           const lat = Number(item.latitude);
           const lon = Number(item.longitude);
@@ -96,7 +84,6 @@ const ConsumerDashboard = () => {
             price: item.preco || 0,
             image: item.foto || null,
             distance: `${distanceKm.toFixed(2)} km`,
-            rating: 4.5,
             products: 4, 
           };
         });
@@ -115,7 +102,7 @@ const ConsumerDashboard = () => {
   const handleLogout = async () => {
   try {
       await AsyncStorage.removeItem('consumerToken');
-      router.replace('/');
+      router.replace('/(auth)/home');
     } catch (error) {
       Alert.alert('Erro ao sair', 'Não foi possível realizar o logout.');
       console.error('Erro ao fazer logout:', error);
@@ -128,7 +115,7 @@ const ConsumerDashboard = () => {
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.greeting}>Bom dia, {userName}</Text>
+          <Text style={styles.greeting}>Bom dia, consumidor!</Text>
           <Text style={styles.location}>
             <MaterialCommunityIcons name="map-marker" size={16} color="#4a7c59" />
             {locationText || 'Carregando localização...'}

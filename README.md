@@ -1,50 +1,44 @@
-# Welcome to your Expo app 👋
+# 📱 Vizinho Agro App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplicativo mobile desenvolvido com Expo e React Native para conectar produtores locais a consumidores, com foco em geolocalização, filtros inteligentes e acessibilidade rural.
 
-## Get started
+## 🚀 Tecnologias Principais
 
-1. Install dependencies
+- **Expo** – ambiente de desenvolvimento para React Native
+- **React Native** – desenvolvimento mobile cross-platform
+- **TypeScript** – tipagem estática
+- **React Hook Form** – gerenciamento de formulários
+- **AsyncStorage** – persistência local
+- **React Context API** – gerenciamento de estado global
+- **Map Clustering e Localização** – geolocalização para exibir produtores
 
-   ```bash
-   npm install
-   ```
+## 📁 Estrutura de Pastas
 
-2. Start the app
+src/
+├── app/ # Entrypoints de telas, rotas e navegação
+├── assets/ # Imagens, ícones e outros recursos estáticos
+├── components/ # Componentes reutilizáveis
+├── contexts/ # Contextos React para estado global
+├── services/ # Lógica de serviços e chamadas à API
 
-   ```bash
-   npx expo start
-   ```
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## ⚙️ Scripts Disponíveis
 
 ```bash
+# Inicia o app no Expo Go
+npm start
+
+# Inicia o app diretamente no Android
+npm run android
+
+# Inicia o app diretamente no iOS (MacOS)
+npm run ios
+
+# Inicia versão web (Expo Web)
+npm run web
+
+# Executa o lint
+npm run lint
+
+# Reseta o projeto (custom script)
 npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.

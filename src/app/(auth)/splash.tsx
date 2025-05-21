@@ -17,7 +17,7 @@ export default function SplashScreen() {
       setError(null);
 
       let { status } = await Location.getForegroundPermissionsAsync();
-      
+
       if (status !== 'granted') {
         const { status: newStatus } = await Location.requestForegroundPermissionsAsync();
         status = newStatus;
@@ -27,8 +27,8 @@ export default function SplashScreen() {
 
       if (status !== 'granted') {
         Alert.alert(
-          "Permission Required",
-          "The app needs location permission to function properly.",
+          "Permissão necessária",
+          "O app precisa de permissão de localização para funcionar corretamente.",
           [{ text: "OK", onPress: () => setLoading(false) }]
         );
         return;
@@ -37,43 +37,43 @@ export default function SplashScreen() {
       const isEnabled = await Location.hasServicesEnabledAsync();
       if (!isEnabled) {
         Alert.alert(
-          "Location Services Disabled",
-          "Please enable location services",
+          "Serviços de localização desativados",
+          "Por favor, ative os serviços de localização.",
           [{ text: "OK", onPress: () => setLoading(false) }]
         );
         return;
       }
 
-      const checkToken = async (tokenKey: string, route: string) => {
-        const token = await AsyncStorage.getItem(tokenKey);
-        if (!token) return false;
+      const token = await AsyncStorage.getItem('producerToken');
+      if (!token) {
+        // Sem token, vai para login do produtor
+        router.replace('/(auth)/login-farmer');
+        return;
+      }
 
-        try {
-          const response = await api.get('/me', {
-            headers: { Authorization: `Bearer ${token}` },
-            timeout: 5000
-          });
-          
-          if (response.status === 200) {
-            router.replace('/(consumer)/map');
-            return true;
-          }
-        } catch (err) {
-          console.warn(`Token verification failed (${tokenKey}):`, err);
-          await AsyncStorage.removeItem(tokenKey);
+      try {
+        const response = await api.get('/me', {
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 5000,
+        });
+
+        if (response.status === 200) {
+          router.replace('/(farmer)/dashbord-farmer');
+          return true;
         }
+      } catch (err) {
+        console.warn('Token producer inválido ou expirado:', err);
+        await AsyncStorage.removeItem('producerToken');
+        router.replace('/(auth)/login-farmer');
         return false;
-      };
+      }
 
-      if (await checkToken('consumerToken', '/(consumer)/map')) return;
-      
-      if (await checkToken('producerToken', '/(farmer)/dashboard-farmer')) return;
-
-      router.replace('/(auth)/home');
+      // fallback para login caso algo falhe
+      router.replace('/(auth)/login-farmer');
 
     } catch (err) {
-      console.error("Initial verification error:", err);
-      setError("An error occurred while starting the app");
+      console.error("Erro na verificação inicial:", err);
+      setError("Ocorreu um erro ao iniciar o app");
       setLoading(false);
     }
   }, [router]);
@@ -82,8 +82,12 @@ export default function SplashScreen() {
     verifyAuth();
   }, [verifyAuth]);
 
-  
-  useEffect(() => {
+  const handleRetry = () => {
+    setError(null);
+    verifyAuth();
+  };
+
+   useEffect(() => {
     const timeout = setTimeout(() => {
       if (!loading && !error && permissionStatus === 'granted') {
         router.replace('/(auth)/home');
@@ -93,16 +97,11 @@ export default function SplashScreen() {
     return () => clearTimeout(timeout);
   }, [loading, error, permissionStatus, router]);
 
-  const handleRetry = () => {
-    setError(null);
-    verifyAuth();
-  };
-
   if (loading) {
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" color="#2E7D32" />
-        <Text style={styles.text}>Loading...</Text>
+        <Text style={styles.text}>Carregando...</Text>
       </View>
     );
   }
@@ -112,7 +111,7 @@ export default function SplashScreen() {
       <View style={styles.container}>
         <Text style={[styles.text, styles.error]}>{error}</Text>
         <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
-          <Text style={styles.retryButtonText}>Try Again</Text>
+          <Text style={styles.retryButtonText}>Tentar novamente</Text>
         </TouchableOpacity>
       </View>
     );
@@ -120,7 +119,7 @@ export default function SplashScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Redirecting...</Text>
+      <Text style={styles.text}>Redirecionando...</Text>
       <ActivityIndicator size="small" color="#2E7D32" />
     </View>
   );

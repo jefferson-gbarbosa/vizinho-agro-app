@@ -25,7 +25,7 @@ export default function NewProductScreen(){
   const [availabilityType, setAvailabilityType] = useState<'always' | 'until'>('always');
   const [untilDate, setUntilDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [, setIsLoading] = useState(false);
 
   // // Referência para o picker de categoria
   const pickerRef = useRef<Picker<string>>(null);

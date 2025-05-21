@@ -32,7 +32,7 @@ const Home = () => {
 
         <TouchableOpacity 
           style={[styles.botao, styles.botaoConsumidor]}
-          onPress={() => router.push('/(auth)/login-consumer')}
+          onPress={() => router.push('/(consumer)/map')}
         >
           <Text style={styles.textoBotao}>Sou Consumidor</Text>
         </TouchableOpacity>
