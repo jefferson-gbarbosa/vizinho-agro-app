@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import {
+  View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import * as Location from 'expo-location';
 import api from '@/services/api';
 
 type Producer = {
@@ -13,28 +16,58 @@ type Producer = {
   products: number;
 };
 
+// Função para calcular distância em km entre dois pontos geográficos
+function getDistanceInKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const toRad = (value: number) => (value * Math.PI) / 180;
+  const R = 6371;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
 
 const FarmersList = () => {
   const router = useRouter();
   const [farmers, setFarmers] = useState<Producer[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   useEffect(() => {
     const fetchFarmers = async () => {
       try {
-       const res = await api.get<Producer[]>('/location-producers');
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          console.warn('Permissão de localização negada');
+          setLoading(false);
+          return;
+        }
 
-        const data: Producer[] = res.data.map((item: any) => ({
-          id: String(item.id),
-          name: item.nome || "Produtor sem nome",
-          distance: '2.0 km',
-          rating: 4.5, 
-          products: 4,
-          latitude: Number(item.latitude),
-          longitude: Number(item.longitude),
-      }));
-        
-      setFarmers(data);
+        const location = await Location.getCurrentPositionAsync({});
+        const { latitude: userLat, longitude: userLon } = location.coords;
+
+        const res = await api.get('/location-producers');
+        const data: Producer[] = res.data.map((item: any) => {
+          const distance = getDistanceInKm(
+            userLat,
+            userLon,
+            Number(item.latitude),
+            Number(item.longitude)
+          );
+
+          return {
+            id: String(item.id),
+            name: item.nome || "Produtor sem nome",
+            distance: `${distance.toFixed(2)} km`,
+            products: item.products?.length ?? 0,
+            latitude: Number(item.latitude),
+            longitude: Number(item.longitude),
+          };
+        });
+
+        const sorted = data.sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance));
+        setFarmers(sorted);
       } catch (error) {
         console.error('Erro ao buscar produtores:', error);
       } finally {
@@ -56,13 +89,18 @@ const FarmersList = () => {
 
   return (
     <View style={styles.container}>
+      {/* Botão de voltar */}
+      <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <MaterialCommunityIcons name="arrow-left" size={28} color="#4a7c59" />
+      </TouchableOpacity>
+
       <Text style={styles.title}>Agricultores Disponíveis</Text>
-      
+
       <FlatList
         data={farmers}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.farmerCard}
             onPress={() => router.push(`/(consumer)/farmers/${item.id}`)}
           >
@@ -88,6 +126,12 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: '#f8f9fa',
+    marginTop: 40,
+  },
+  backButton: {
+    alignSelf: 'flex-start',
+    marginBottom: 10,
+    padding: 5,
   },
   title: {
     fontSize: 24,
@@ -141,7 +185,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
   },
-   loadingContainer: {
+  loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',

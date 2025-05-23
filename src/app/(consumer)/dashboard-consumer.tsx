@@ -7,6 +7,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import api from '@/services/api';
 
+type Product = {
+  id: string;
+  nome: string;
+  preco: number;
+  quantidade: number;
+  tipo: string;
+  foto: string | null;
+};
+
 type Producer = {
   id: string;
   name: string;
@@ -16,14 +25,13 @@ type Producer = {
   price: number;
   image: string | null;
   distance?: string;
-  products?: number;
+  products: Product[];
 };
 
 const ConsumerDashboard = () => {
   const router = useRouter();
   const [farmers, setFarmers] = useState<Producer[]>([]);
   const [locationText, setLocationText] = useState('');
-
   const [isLoadingFarmers, setIsLoadingFarmers] = useState(true);
 
   function getDistanceInKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -68,7 +76,6 @@ const ConsumerDashboard = () => {
         const userLat = location.coords.latitude;
         const userLon = location.coords.longitude;
         const res = await api.get<Producer[]>('/location-producers');
-        console.log(res.data)
        
         const data: Producer[] = res.data.map((item: any) => {
           const lat = Number(item.latitude);
@@ -84,7 +91,7 @@ const ConsumerDashboard = () => {
             price: item.preco || 0,
             image: item.foto || null,
             distance: `${distanceKm.toFixed(2)} km`,
-            products: 4, 
+            products: item.products || [], 
           };
         });
         
@@ -100,7 +107,7 @@ const ConsumerDashboard = () => {
   }, []);
 
   const handleLogout = async () => {
-  try {
+    try {
       await AsyncStorage.removeItem('consumerToken');
       router.replace('/(auth)/home');
     } catch (error) {
@@ -110,79 +117,94 @@ const ConsumerDashboard = () => {
   };
 
   return (
-    <SafeAreaView style={{flex: 1}}>
+   <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.greeting}>Bom dia, consumidor!</Text>
-          <Text style={styles.location}>
-            <MaterialCommunityIcons name="map-marker" size={16} color="#4a7c59" />
-            {locationText || 'Carregando localização...'}
-          </Text>
-        </View>
-        <TouchableOpacity onPress={handleLogout}>
-          <View style={styles.profilePlaceholder}>
+        {/* Header */}
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.greeting}>Bom dia, consumidor!</Text>
+            <Text style={styles.location}>
+              <MaterialCommunityIcons name="map-marker" size={16} color="#4a7c59" />{' '}
+              {locationText || 'Carregando localização...'}
+            </Text>
+          </View>
+          <TouchableOpacity onPress={handleLogout}>
+            <View style={styles.profilePlaceholder}>
               <MaterialCommunityIcons name="logout" size={32} color="#E57373" />
-          </View>
-        </TouchableOpacity>
-      </View>
-      {/* Barra de Pesquisa */}
-      <TouchableOpacity 
-        style={styles.searchBar}
-        onPress={() => router.push('/(consumer)/search')}
-      >
-        <MaterialCommunityIcons name="magnify" size={24} color="#8a9b68" />
-        <Text style={styles.searchText}>Buscar produtos ou agricultores...</Text>
-      </TouchableOpacity>
-      {/* Conteúdo Principal */}
-      <ScrollView style={styles.content}>
-        {/* Seção: Produtos em Destaque */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Produtos em Destaque</Text>
-            <TouchableOpacity onPress={() => router.push('/products')}>
-              <Text style={styles.seeAll}>Ver todos</Text>
-            </TouchableOpacity>
-          </View>
-          {isLoadingFarmers ? (
-            <View style={{ alignItems: 'center', marginTop: 20 }}>
-              <ActivityIndicator size="small" color="#8a9b68" />
-              <Text style={{ marginTop: 8, color: '#666' }}>Carregando produtos...</Text>
             </View>
-          ):(
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
-              {farmers.map(product => (
-                <TouchableOpacity 
-                  key={product.id}
-                  style={styles.productCard}
-                  onPress={() => router.push(`/products/${product.id}`)}
-                >
-                  <Image source={product.image ? { uri: product.image } : require('@/assets/images/logo.png')} style={styles.productImage} />
-                  <Text style={styles.productName} numberOfLines={1}>{product.type}</Text>
-                  <Text style={styles.productPrice}>R$ {product.price.toFixed(2)}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          )}
+          </TouchableOpacity>
         </View>
-        {/* Seção: Agricultores Próximos */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Agricultores Próximos</Text>
-            <TouchableOpacity onPress={() => router.push('/(consumer)/farmers')}>
-              <Text style={styles.seeAll}>Ver todos </Text>
-            </TouchableOpacity>
-          </View>  
-          <View style={styles.farmersContainer}>
+
+        {/* Barra de Pesquisa */}
+        <TouchableOpacity
+          style={styles.searchBar}
+          onPress={() => router.push('/(consumer)/search')}
+        >
+          <MaterialCommunityIcons name="magnify" size={24} color="#8a9b68" />
+          <Text style={styles.searchText}>Buscar produtos ou agricultores...</Text>
+        </TouchableOpacity>
+
+        {/* Conteúdo Principal */}
+        <ScrollView style={styles.content}>
+          {/* Seção: Produtos em Destaque */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Produtos em Destaque</Text>
+              <TouchableOpacity onPress={() => router.push('/products')}>
+                <Text style={styles.seeAll}>Ver todos</Text>
+              </TouchableOpacity>
+            </View>
+
             {isLoadingFarmers ? (
+              <View style={{ alignItems: 'center', marginTop: 20 }}>
+                <ActivityIndicator size="small" color="#8a9b68" />
+                <Text style={{ marginTop: 8, color: '#666' }}>Carregando produtos...</Text>
+              </View>
+            ) : (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+                {farmers.flatMap(farmer =>
+                  farmer.products.map((product, index) => (
+                    <TouchableOpacity
+                      key={`${farmer.id}-${index}`}
+                      style={styles.productCard}
+                      onPress={() => router.push(`/products/${farmer.id}`)}
+                    >
+                      <Image
+                        source={
+                          product.foto
+                            ? { uri: product.foto }
+                            : require('@/assets/images/logo.png')
+                        }
+                        style={styles.productImage}
+                      />
+                      <Text style={styles.productName} numberOfLines={1}>
+                        {product.nome}
+                      </Text>
+                      <Text style={styles.productPrice}>R$ {product.preco.toFixed(2)}</Text>
+                    </TouchableOpacity>
+                  ))
+                )}
+              </ScrollView>
+            )}
+          </View>
+
+          {/* Seção: Agricultores Próximos */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Agricultores Próximos</Text>
+              <TouchableOpacity onPress={() => router.push('/(consumer)/farmers')}>
+                <Text style={styles.seeAll}>Ver todos</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.farmersContainer}>
+              {isLoadingFarmers ? (
                 <View style={{ alignItems: 'center', marginTop: 20 }}>
                   <ActivityIndicator size="small" color="#8a9b68" />
                   <Text style={{ marginTop: 8, color: '#666' }}>Carregando produtores...</Text>
                 </View>
               ) : (
                 farmers.map(farmer => (
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     key={farmer.id}
                     style={styles.farmerCard}
                     onPress={() => router.push(`/(consumer)/farmers/${farmer.id}`)}
@@ -199,9 +221,9 @@ const ConsumerDashboard = () => {
                   </TouchableOpacity>
                 ))
               )}
+            </View>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
       </View>
     </SafeAreaView>
   );

@@ -1,78 +1,104 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Image, ActivityIndicator } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import {
+  View, Text, ScrollView, StyleSheet, Image,
+  ActivityIndicator, TouchableOpacity, Linking
+} from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
 import api from '@/services/api';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 type Product = {
   id: number;
   nome: string;
-  tipo?: string;
-  preco: number;
-  quantidade?: number;
   imagem?: string;
-  disponibilidadeTipo?: string;
-  disponivelAte?: string;
   producerId: number;
+};
+
+type Producer = {
+  id: number;
+  nome: string;
+  telefone?: string;
+  email?: string;
 };
 
 const FarmerDetails = () => {
   const { id } = useLocalSearchParams();
+  const productId = Array.isArray(id) ? id[0] : id;
 
   const [product, setProduct] = useState<Product | null>(null);
+  const [producer, setProducer] = useState<Producer | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const fetchProduct = async () => {
+    const fetchData = async () => {
       try {
-        const response = await api.get(`/products/${id}`);
-        setProduct(response.data);
+        const response = await api.get(`/products/${productId}`);
+        const productData = response.data;
+        setProduct(productData);
+
+        const producerResponse = await api.get(`/producers/${productData.producerId}`);
+        setProducer(producerResponse.data);
       } catch (err) {
         console.error(err);
-        setError('Erro ao carregar produtor.');
+        setError('Erro ao carregar dados do produtor.');
       } finally {
         setLoading(false);
       }
     };
-    fetchProduct();
-  }, [id]);
 
-  if (loading) return <ActivityIndicator size="large" color="#4a7c59" />;
+    if (productId) {
+      fetchData();
+    }
+  }, [productId]);
+
+  const handleCall = () => {
+    if (producer?.telefone) Linking.openURL(`tel:${producer.telefone}`);
+  };
+
+  const handleMessage = () => {
+    if (producer?.telefone) {
+      const phone = producer.telefone.replace(/\D/g, '');
+      const url = `https://wa.me/${phone}`;
+      Linking.openURL(url);
+    }
+  };
+
+  if (loading) return <ActivityIndicator size="large" color="#2E7D32" />;
   if (error) return <Text style={{ color: 'red' }}>{error}</Text>;
-  if (!product) return <Text>Produto não encontrado</Text>;
+  if (!product || !producer) return <Text>Informações não encontradas</Text>;
+
   return (
     <ScrollView style={styles.container}>
+      <View style={styles.backButtonContainer}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <MaterialCommunityIcons name="arrow-left" size={28} color="#2E7D32" />
+        </TouchableOpacity>
+      </View>
+
       <View style={styles.header}>
         <Image
           source={{ uri: product.imagem || 'https://via.placeholder.com/120' }}
           style={styles.farmerImage}
         />
-        <Text style={styles.farmerName}>{product.nome}</Text>
-
-        <View style={styles.infoRow}>
-          <View style={styles.infoItem}>
-            <MaterialCommunityIcons name="map-marker" size={20} color="#4a7c59" />
-            <Text style={styles.infoText}>Localização não disponível</Text>
-          </View>
-
-          <View style={styles.infoItem}>
-            <MaterialCommunityIcons name="star" size={20} color="#FFD700" />
-            <Text style={styles.infoText}>N/A</Text>
-          </View>
-        </View>
+        <Text style={styles.farmerName}>{producer.nome}</Text>
       </View>
 
-      <Text style={styles.sectionTitle}>Informações do Produto</Text>
+      <Text style={styles.sectionTitle}>Contato do Produtor</Text>
 
-      <View style={styles.productCard}>
-        <View>
-          <Text style={styles.productName}>Tipo: {product.tipo || 'Não informado'}</Text>
-          <Text style={styles.productName}>Quantidade: {product.quantidade ?? 'Não informada'}</Text>
-          <Text style={styles.productPrice}>Preço: R$ {product.preco.toFixed(2)}</Text>
-          <Text style={styles.productName}>Disponibilidade: {product.disponibilidadeTipo || 'Não informada'}</Text>
-          <Text style={styles.productName}>Disponível até: {product.disponivelAte || 'Não informado'}</Text>
-        </View>
+      <View style={styles.contactBox}>
+        <Text style={styles.contactText}>Telefone: {producer.telefone || 'Não informado'}</Text>
+
+        {producer.telefone && (
+          <View style={styles.buttonRow}>
+            <TouchableOpacity style={styles.contactButton} onPress={handleMessage}>
+              <Text style={styles.contactButtonText}>Enviar Mensagem</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.contactButton} onPress={handleCall}>
+              <Text style={styles.contactButtonText}>Ligar</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     </ScrollView>
   );
@@ -82,12 +108,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#FAFAFA',
+    marginTop: 40,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  backButtonContainer: {
+    marginBottom: 10,
+  },
+  backButton: {
+    alignSelf: 'flex-start',
+    padding: 8,
   },
   header: {
     alignItems: 'center',
@@ -98,59 +127,44 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 60,
     marginBottom: 15,
+    backgroundColor: '#8D6E63',
   },
   farmerName: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 10,
-    color: '#333',
+    color: '#263238',
     textAlign: 'center',
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 15,
-  },
-  infoItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: 15,
-  },
-  infoText: {
-    marginLeft: 5,
-    fontSize: 16,
-    color: '#666',
-  },
-  description: {
-    fontSize: 16,
-    color: '#555',
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 20,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#333',
+    color: '#263238',
     marginBottom: 15,
   },
-  productCard: {
-    backgroundColor: '#fff',
+  contactBox: {
+    backgroundColor: '#FAFAFA',
     borderRadius: 10,
     padding: 15,
-    marginBottom: 10,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  },
+  contactText: {
+    fontSize: 16,
+    color: '#263238',
+    marginBottom: 12,
+  },
+  buttonRow: {
+    gap: 10,
+  },
+  contactButton: {
+    backgroundColor: '#2E7D32',
+    paddingVertical: 12,
+    borderRadius: 8,
     alignItems: 'center',
   },
-  productName: {
+  contactButtonText: {
+    color: '#FAFAFA',
     fontSize: 16,
-    color: '#333',
-  },
-  productPrice: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#4a7c59',
+    fontWeight: '600',
   },
 });
 

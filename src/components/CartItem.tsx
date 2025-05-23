@@ -27,8 +27,8 @@ const CartItem: React.FC<CartItemComponentProps> = ({ item, onUpdate, onRemove }
         style={styles.image}
       />
       <View style={styles.details}>
-        <Text style={styles.name}>{item.name}</Text>
-        <Text style={styles.farmer}>{item.farmer}</Text>
+        <Text style={styles.name}>{item.farmer}</Text>
+        <Text style={styles.farmer}>{item.name}</Text>
         <Text style={styles.price}>R$ {item.price.toFixed(2)}</Text>
       </View>
       <View style={styles.quantityControl}>

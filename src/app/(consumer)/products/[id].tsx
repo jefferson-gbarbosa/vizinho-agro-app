@@ -21,32 +21,34 @@ const ProductDetail = () => {
   const { addItem } = useCart();
 
   useEffect(() => {
-      const fetchProducer = async () => {
-        try {
-         const res = await api.get<Producer[]>('/location-producers');
-  
-          const data: Producer[] = res.data.map((item: any) => ({
-            id: String(item.id),
-            name: item.nome || "Produtor sem nome",
-            type: item.tipo || '',
-            price: item.preco || 0,  
-            image: item.foto || null,
-        }));
-          
-       const selected = data.find((p) => p.id === id);
-        if (selected) {
-          setProducer(selected);
-        }
-        } catch (error) {
-          console.error('Erro ao buscar produtores:', error);
-        } 
-      };
-  
-      fetchProducer();
-    }, [id]);
+    // Resetar estado ao trocar produto
+    setIsInCart(false);
+    setQuantity(1);
+
+    const fetchProducer = async () => {
+      if (!id) return;
+      try {
+        const res = await api.get(`/products/${id}`);
+        const item = res.data;
+
+        const producerData: Producer = {
+          id: String(item.id),
+          name: item.nome || "Produtor sem nome",
+          type: item.tipo || '',
+          price: item.preco || 0,
+          image: item.foto || null,
+        };
+
+        setProducer(producerData);
+      } catch (error) {
+        console.error('Erro ao buscar produtor:', error);
+      }
+    };
+
+    fetchProducer();
+  }, [id]);
 
   const handleAddToCart = () => {
-    setIsInCart(true);
     if (!producer) return;
 
     addItem({
@@ -56,54 +58,52 @@ const ProductDetail = () => {
       quantity,
       farmer: producer.name,
     });
+    setIsInCart(true);
   };
 
-  const increaseQuantity = () => {
-    setQuantity(prev => prev + 1);
-  };
-
+  const increaseQuantity = () => setQuantity(prev => prev + 1);
   const decreaseQuantity = () => {
-    if (quantity > 1) {
-      setQuantity(prev => prev - 1);
-    }
-  }
+    if (quantity > 1) setQuantity(prev => prev - 1);
+  };
+
   if (!producer) {
-      return <Text style={{ padding: 16 }}>Carregando produtor...</Text>;
+    return <Text style={{ padding: 16 }}>Carregando produtor...</Text>;
   }
 
   return (
     <View style={styles.container}>
-      <Image source={producer?.image ? { uri: producer.image } : require('@/assets/images/logo.png')} style={styles.image} resizeMode="contain"/>
+      <View style={styles.backButtonContainer}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <MaterialCommunityIcons name="arrow-left" size={28} color="#2E7D32" />
+        </TouchableOpacity>
+      </View>
+      <Image
+        source={producer.image ? { uri: producer.image } : require('@/assets/images/logo.png')}
+        style={styles.image}
+        resizeMode="contain"
+      />
       <View style={styles.content}>
-        <Text style={styles.name}>{producer?.type}</Text>
-        
+        <Text style={styles.name}>{producer.name}</Text>
+
         <View style={styles.priceContainer}>
-          <Text style={styles.price}>R$ {producer?.price.toFixed(2)}</Text>
+          <Text style={styles.price}>R$ {producer.price.toFixed(2)}</Text>
           <Text style={styles.priceUnit}>/kg</Text>
         </View>
-        
+
         <View style={styles.farmerContainer}>
-          <Text style={styles.farmerLabel}>Agricultor:</Text>
-          <Text style={styles.farmer}>{producer?.name}</Text>
+          <Text style={styles.farmer}>{producer.type}</Text>
         </View>
-        
+
         <View style={styles.separator} />
-       
-        {/* Controles de quantidade e botão de adicionar */}
+
         {isInCart ? (
           <View style={styles.cartControls}>
             <View style={styles.quantityControls}>
-              <TouchableOpacity 
-                style={styles.quantityButton} 
-                onPress={decreaseQuantity}
-              >
+              <TouchableOpacity style={styles.quantityButton} onPress={decreaseQuantity}>
                 <MaterialCommunityIcons name="minus" size={20} color="#4a7c59" />
               </TouchableOpacity>
               <Text style={styles.quantityText}>{quantity}</Text>
-              <TouchableOpacity 
-                style={styles.quantityButton} 
-                onPress={increaseQuantity}
-              >
+              <TouchableOpacity style={styles.quantityButton} onPress={increaseQuantity}>
                 <MaterialCommunityIcons name="plus" size={20} color="#4a7c59" />
               </TouchableOpacity>
             </View>
@@ -112,12 +112,13 @@ const ProductDetail = () => {
             </TouchableOpacity>
           </View>
         ) : (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.addButton}
             onPress={handleAddToCart}
+            disabled={!producer}
           >
             <Text style={styles.addButtonText}>Adicionar ao Carrinho</Text>
-            <Text style={styles.addButtonSubText}>R$ {(producer?.price * quantity).toFixed(2)}</Text>
+            <Text style={styles.addButtonSubText}>R$ {(producer.price * quantity).toFixed(2)}</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -129,6 +130,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+  },
+  backButtonContainer: {
+    marginTop: 30,
+  },
+  backButton: {
+    alignSelf: 'flex-start',
+    padding: 8,
   },
   image: {
     width: '100%',
@@ -179,17 +187,6 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#ecf0f1',
     marginVertical: 15,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    marginBottom: 10,
-  },
-  description: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: '#34495e',
   },
   addButton: {
     backgroundColor: '#4a7c59',
@@ -242,4 +239,3 @@ const styles = StyleSheet.create({
 });
 
 export default ProductDetail;
-
