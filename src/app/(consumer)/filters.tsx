@@ -1,24 +1,31 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, Alert } from "react-native";
-import { Picker } from '@react-native-picker/picker';
-import * as Location from 'expo-location';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  FlatList,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
+import * as Location from "expo-location";
 import api from "@/services/api";
+import { router } from "expo-router";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-export default function ConsumerFiltersScreen(){
- 
-  const [distance, setDistance] = useState<string>("5");
-  const [type, setType] = useState<string>("");
-  const [price, setPrice] = useState<string>("");
-
- const [latitude, setLatitude] = useState<number | null>(null);
- const [longitude, setLongitude] = useState<number | null>(null);
- const [loading, setLoading] = useState(false);
-
+export default function ConsumerFiltersScreen() {
+  const [productName, setProductName] = useState<string>("");
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState<any[]>([]);
+  const [searched, setSearched] = useState(false);
 
   useEffect(() => {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
+      if (status !== "granted") {
         Alert.alert("Permissão negada", "Precisamos da sua localização para filtrar.");
         return;
       }
@@ -29,28 +36,29 @@ export default function ConsumerFiltersScreen(){
     })();
   }, []);
 
-  const [results, setResults] = useState<any[]>([]);
-
-   const fetchFilteredData = async () => {
-    if (latitude === null || longitude === null) {
-        Alert.alert("Erro", "Localização não disponível para aplicar o filtro.");
-        return;
+  const fetchFilteredData = async () => {
+    if (!productName.trim()) {
+      Alert.alert("Campo obrigatório", "Digite o nome do produto para buscar.");
+      return;
     }
+
     try {
       setLoading(true);
-      // Monta a URL com query params
-      const params: Record<string, string> = {};
+      const params: Record<string, string> = {
+        name: productName,
+      };
 
-      if (distance) params.distance = distance;
-      if (type) params.type = type;
-      if (price) params.price = price;
       if (latitude !== null) params.latitude = latitude.toString();
       if (longitude !== null) params.longitude = longitude.toString();
 
       const query = new URLSearchParams(params).toString();
-      const response = await api.get(`/filter?${query}`);
-     
+      const response = await api.get(`/filter-by-name?${query}`);
+
       setResults(response.data);
+      setSearched(true);
+
+      // Opcional: limpa o campo após busca
+      // setProductName("");
     } catch (error: any) {
       Alert.alert("Erro", error.message || "Não foi possível buscar os dados.");
     } finally {
@@ -58,114 +66,124 @@ export default function ConsumerFiltersScreen(){
     }
   };
 
-  const applyFilters = () => {
-   fetchFilteredData();
-  };
+  const renderItem = ({ item }: { item: any }) => (
+    <TouchableOpacity
+      onPress={() => router.push(`/(consumer)/farmers/${item.id}`)}
+      style={styles.resultItem}
+    >
+      <Text style={styles.resultText}>
+        {item.nome} - {item.products?.nome || "Produto indisponível"} - R${" "}
+        {item.products?.preco?.toFixed(2) || "0,00"}
+      </Text>
+    </TouchableOpacity>
+  );
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.label}>Distância</Text>
-      <View style={styles.pickerContainer}>
-        <Picker
-          selectedValue={distance}
-          style={styles.picker}
-          onValueChange={(itemValue) => setDistance(itemValue)}
-          dropdownIconColor="#2E7D32"
-        >
-          <Picker.Item label="5 km" value="5" />
-          <Picker.Item label="10 km" value="10" />
-          <Picker.Item label="20 km" value="20" />
-        </Picker>
+    <View style={styles.container}>
+      <View style={styles.backButtonContainer}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <MaterialCommunityIcons name="arrow-left" size={28} color="#2E7D32" />
+        </TouchableOpacity>
       </View>
-
-      <Text style={styles.label}>Tipo de Produto</Text>
+      <Text style={styles.label}>Nome do Produto</Text>
       <TextInput
         style={styles.input}
-        placeholder="Ex: Frutas, Verduras"
+        placeholder="Ex: Banana, Tomate, Leite"
         placeholderTextColor="#8D6E63"
-        value={type}
-        onChangeText={setType}
+        value={productName}
+        onChangeText={setProductName}
+        editable={!loading}
+        returnKeyType="search"
+        onSubmitEditing={fetchFilteredData}
       />
 
-      <Text style={styles.label}>Preço máximo</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Digite o preço máximo"
-        placeholderTextColor="#8D6E63"
-        keyboardType="numeric"
-        value={price}
-        onChangeText={setPrice}
-      />
-     <TouchableOpacity style={styles.button} onPress={applyFilters} disabled={loading}>
-      <Text style={styles.buttonText}>{loading ? "Carregando..." : "Aplicar Filtros"}</Text>
-     </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.button, loading && styles.buttonDisabled]}
+        onPress={fetchFilteredData}
+        disabled={loading}
+      >
+        <Text style={styles.buttonText}>{loading ? "Carregando..." : "Buscar"}</Text>
+      </TouchableOpacity>
 
-      <View style={{ marginTop: 20 }}>
-        {results.length === 0 ? (
-          <Text>Nenhum resultado encontrado.</Text>
-        ) : (
-          results.map((item, index) => (
-            <Text key={index} style={{ marginBottom: 5 }}>
-              {item.nome} - R$ {item.preco}
-            </Text>
-          ))
+      <View style={styles.resultsContainer}>
+        {loading && <ActivityIndicator size="large" color="#2E7D32" />}
+        {!loading && searched && results.length === 0 && (
+          <Text style={styles.noResultsText}>Nenhum resultado encontrado.</Text>
+        )}
+
+        {!loading && results.length > 0 && (
+          <FlatList
+            data={results}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderItem}
+            keyboardShouldPersistTaps="handled"
+          />
         )}
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flexGrow: 1, 
-    padding: 20, 
-    backgroundColor: "#FAFAFA" ,
-    marginTop: 50
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: "#FAFAFA",
+    marginTop: 50,
   },
-  label: { 
-    marginBottom: 20, 
+  label: {
+    marginBottom: 20,
     fontWeight: "600",
     color: "#263238",
     fontSize: 18,
   },
-  input: { 
-    borderWidth: 1, 
-    borderColor: "#8D6E63", 
-    padding: 12, 
-    marginBottom: 20, 
-    borderRadius: 8,
-    color: "#263238",
-    backgroundColor: "#FAFAFA"
-  },
-  pickerContainer: {
+  input: {
     borderWidth: 1,
     borderColor: "#8D6E63",
-    borderRadius: 8,
+    padding: 12,
     marginBottom: 20,
-    overflow: "hidden"
-  },
-  picker: { 
-    height: 50,
+    borderRadius: 8,
     color: "#263238",
-    backgroundColor: "#FAFAFA"
-  },
-  switchContainer: { 
-    flexDirection: "row", 
-    alignItems: "center", 
-    marginBottom: 30, 
-    justifyContent: "space-between",
-    paddingVertical: 10
+    backgroundColor: "#FAFAFA",
   },
   button: {
     backgroundColor: "#2E7D32",
     padding: 15,
     borderRadius: 8,
     alignItems: "center",
-    marginTop: 10
+    marginTop: 10,
+  },
+  buttonDisabled: {
+    backgroundColor: "#7CB27E",
   },
   buttonText: {
     color: "#FAFAFA",
     fontWeight: "bold",
-    fontSize: 16
-  }
+    fontSize: 16,
+  },
+  resultsContainer: {
+    marginTop: 20,
+    flex: 1,
+  },
+  resultItem: {
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#CCC",
+  },
+  resultText: {
+    fontSize: 16,
+    color: "#263238",
+  },
+  noResultsText: {
+    fontSize: 16,
+    fontStyle: "italic",
+    color: "#999",
+  },
+  backButtonContainer: {
+    marginBottom: 20,
+  },
+  backButton: {
+    alignSelf: "flex-start",
+    padding: 8,
+  },
 });

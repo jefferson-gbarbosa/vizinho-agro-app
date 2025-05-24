@@ -1,6 +1,6 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, FlatList } from "react-native";
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from "expo-location";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -30,11 +30,16 @@ const MapViewScreen = () => {
   useEffect(() => {
     (async () => {
       try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          Alert.alert("Permissão negada", "Precisamos da sua permissão para acessar a localização.");
+          return;
+        }
         const loc = await Location.getCurrentPositionAsync({});
         setLocation(loc.coords);
         loadProducers(loc.coords.latitude, loc.coords.longitude);
       } catch (error) {
-        alert("Erro ao obter localização.");
+         Alert.alert("Erro", "Erro ao obter localização.");
         console.error(error);
       } finally {
         setLoading(false);
@@ -50,50 +55,51 @@ const MapViewScreen = () => {
   }, [params, location, producers]);
 
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-    if (
-      isNaN(lat1) || isNaN(lon1) ||
-      isNaN(lat2) || isNaN(lon2)
-    ) return NaN;
-
+    if (isNaN(lat1) || isNaN(lon1) || isNaN(lat2) || isNaN(lon2)) return NaN;
     const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a =
-      Math.sin(dLat / 2) ** 2 +
-      Math.cos(lat1 * Math.PI / 180) *
-      Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLon / 2) ** 2;
+    const a = Math.sin(dLat / 2) ** 2 +
+              Math.cos(lat1 * Math.PI / 180) *
+              Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon / 2) ** 2;
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   };
 
-  const getMarkerIcon = (type: string) => {
-    switch (type) {
-      case "Frutas":
-        return "🍎";
-      case "Verduras":
-        return "🥬";
-      case "Legumes":
-        return "🥕";
-      case "Flores Comestíveis":
-        return "🌸";
-      default:
-        return "🌱";
-    }
-  };
+ const getMarkerIcon = (productName: string) => {
+  const name = productName.toLowerCase();
 
+  if (name.includes("banana")) return "🍌";
+  if (name.includes("maçã") || name.includes("maca")) return "🍎";
+  if (name.includes("alface")) return "🥬";
+  if (name.includes("milho")) return "🌽";
+  if (name.includes("feijão") || name.includes("feijao")) return "🫘";
+  if (name.includes("tomate")) return "🍅";
+  if (name.includes("leite")) return "🥛";
+  if (name.includes("ovo")) return "🥚";
+
+  return "🧑‍🌾"; // ícone genérico
+};
+ 
   const loadProducers = async (userLat: number, userLng: number) => {
    
     try {
       const res = await api.get<Producer[]>('/location-producers');
-      const data: Producer[] = res.data.map((p: any) => ({
+
+      const data: Producer[] = res.data
+      .filter(p => p.latitude && p.longitude)
+      .map((p: any) => {
+        const product = p.products?.[0] || {};
+        return {
           id: String(p.id),
           name: p.nome || "Produtor sem nome",
           latitude: Number(p.latitude),
           longitude: Number(p.longitude),
-          type: p.tipo || "Outro",
-          price: p.preco ?? 0,
-      }));
+          type: product.nome || "Outro",  
+          price: product.preco ?? 0,
+        };
+      });
 
       setProducers(data);
       setFilteredProducers(data);
@@ -106,34 +112,36 @@ const MapViewScreen = () => {
   const applyFilters = useCallback(() => {
     if (!params || !location) return;
 
-    let filtered = [...producers];
+    let filtered = producers;
 
     if (params.distance) {
       const maxDistance = Number(params.distance);
-      filtered = filtered.filter((p) => {
-        const distance = calculateDistance(location.latitude, location.longitude, p.latitude, p.longitude);
-        return distance <= maxDistance && !isNaN(distance);
+      filtered = filtered.filter(p =>
+        calculateDistance(location.latitude, location.longitude, p.latitude, p.longitude) <= maxDistance
+      );
+    }
+
+    if (params.type) filtered = filtered.filter(p => p.type === params.type);
+    if (params.price) filtered = filtered.filter(p => p.price <= Number(params.price));
+
+    filtered.sort((a, b) =>
+      calculateDistance(location.latitude, location.longitude, a.latitude, a.longitude) -
+      calculateDistance(location.latitude, location.longitude, b.latitude, b.longitude)
+    );
+
+    setFilteredProducers(filtered);
+  }, [params, location, producers]);
+
+   const centerMapOnProducer = (producer: Producer) => {
+    if (mapRef.current) {
+      mapRef.current.animateToRegion({
+        latitude: producer.latitude,
+        longitude: producer.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
       });
     }
-
-    if (params.type) {
-      filtered = filtered.filter((p) => p.type === params.type);
-    }
-
-    if (params.price) {
-      filtered = filtered.filter((p) => p.price <= Number(params.price));
-    }
-
-    filtered.sort((a, b) => {
-      const distA = calculateDistance(location.latitude, location.longitude, a.latitude, a.longitude);
-      const distB = calculateDistance(location.latitude, location.longitude, b.latitude, b.longitude);
-      return distA - distB;
-    });
-
-    if (JSON.stringify(filtered) !== JSON.stringify(filteredProducers)) {
-      setFilteredProducers(filtered);
-    }
-  }, [params, location, producers, filteredProducers]);
+  };
 
   if (loading) {
     return (
@@ -153,13 +161,25 @@ const MapViewScreen = () => {
       </View>
     );
   }
+     
 
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.dashboardButton} onPress={() => router.push("/(consumer)/dashboard-consumer")}>
         <Ionicons name="home" size={32} color="#2E7D32" />
       </TouchableOpacity>
-
+       <TouchableOpacity style={styles.centerButton} onPress={() => {
+        if (mapRef.current && location) {
+          mapRef.current.animateToRegion({
+            latitude: location.latitude,
+            longitude: location.longitude,
+            latitudeDelta: 0.05,
+            longitudeDelta: 0.05,
+          });
+        }
+      }}>
+        <Ionicons name="navigate" size={28} color="#2E7D32" />
+      </TouchableOpacity>
       <MapViewCluster
         ref={mapRef}
         mapRef={() => mapRef.current} 
@@ -175,26 +195,37 @@ const MapViewScreen = () => {
         clusterTextColor="#FFFFFF"
         onRegionChangeComplete={() => {}}
       >
-         {filteredProducers.map((producer) => {
-          const distance = calculateDistance(location.latitude, location.longitude, producer.latitude, producer.longitude);
-          const priceFormatted = producer.price !== undefined ? producer.price.toFixed(2) : 'N/A';
-          const distanceFormatted = !isNaN(distance) ? distance.toFixed(1) : '?';
-      
+         {filteredProducers.map((p) => { 
           return (
             <Marker
-              key={producer.id || `${producer.latitude}-${producer.longitude}`}
-              coordinate={{ latitude: producer.latitude, longitude: producer.longitude }}
-              title={producer.name}
-              description={`${producer.type} • R$ ${priceFormatted} • ${distanceFormatted}km`}
-              pinColor="#2E7D32"
-            >
-              <View style={styles.markerContainer}>
-                <Text style={styles.markerIcon}>{getMarkerIcon(producer.type)}</Text>
-              </View>
-            </Marker>
+            key={p.id}
+            coordinate={{ latitude: p.latitude, longitude: p.longitude }}
+            title={p.name}
+            description={`${p.type} • R$ ${p.price?.toFixed(2)}`}
+            onPress={() => centerMapOnProducer(p)}
+          >
+            <View style={styles.markerContainer}>
+              <Text style={styles.markerIcon}>{getMarkerIcon(p.type)}</Text>
+           
+            </View>
+          </Marker>
           );
         })}
       </MapViewCluster>
+      <FlatList
+        horizontal
+        style={styles.carousel}
+        data={filteredProducers}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <TouchableOpacity style={styles.card} 
+          onPress={() => router.push(`/(consumer)/farmers/${item.id}`)}>
+            <Text style={styles.cardTitle}>{item.name}</Text>
+            <Text style={styles.cardDetails}>{item.type} • R$ {item.price?.toFixed(2)}</Text>
+          </TouchableOpacity>
+        )}
+        showsHorizontalScrollIndicator={false}
+      />
 
       <TouchableOpacity style={styles.filterButton} onPress={() => router.push("/(consumer)/filters")}>
         <Text style={styles.filterButtonText}>Filtrar Produtores</Text>
@@ -217,7 +248,7 @@ const mapStyle = [
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FAFAFA",
+    backgroundColor: "#f0f4f8", // tom suave e claro para background, mais moderno que branco puro
   },
   map: {
     flex: 1,
@@ -226,77 +257,138 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FAFAFA",
+    backgroundColor: "#f0f4f8",
     padding: 20,
   },
   loadingText: {
     marginTop: 16,
-    color: "#263238",
+    color: "#2E7D32", // usar a cor principal do app para destaque
     fontSize: 16,
+    fontWeight: "600",
     fontFamily: "sans-serif",
   },
   errorContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FAFAFA",
+    backgroundColor: "#f0f4f8",
     padding: 20,
   },
   errorText: {
-    color: "#263238",
+    color: "#bf360c", // vermelho escuro para erro, contraste forte
     fontSize: 16,
     textAlign: "center",
+    fontWeight: "600",
     fontFamily: "sans-serif",
   },
+
+  // Botão que centraliza o mapa na localização atual
+  centerButton: {
+    position: "absolute",
+    top: 100,
+    right: 20,
+    zIndex: 10,
+    backgroundColor: "white",
+    padding: 12,
+    borderRadius: 28,
+    elevation: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  // Botão para acessar o dashboard
+  dashboardButton: {
+    position: "absolute",
+    top: 100,
+    left: 20,
+    backgroundColor: "white",
+    padding: 12,
+    borderRadius: 28, // círculo perfeito
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    zIndex: 10,
+  },
+
   filterButton: {
     position: "absolute",
     bottom: 80,
     alignSelf: "center",
     backgroundColor: "#2E7D32",
     paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 24,
-    elevation: 4,
-    shadowColor: "#263238",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    paddingHorizontal: 36,
+    borderRadius: 30,
+    elevation: 6,
+    shadowColor: "#2E7D32",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
     flexDirection: "row",
     alignItems: "center",
   },
   filterButtonText: {
     color: "#FAFAFA",
-    fontWeight: "600",
-    fontSize: 16,
-    marginLeft: 8,
+    fontWeight: "700",
+    fontSize: 17,
   },
+
   markerContainer: {
-    backgroundColor: "white",
-    padding: 5,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "#2E7D32",
-  },
-  markerIcon: {
-    fontSize: 24,
-  },
-  dashboardButton: {
-    position: "absolute",
-    top: 50,
-    right: 20,
-    backgroundColor: "white",
-    width: 60,
-    height: 60,
-    borderRadius: 20,
+    backgroundColor: "#e0f2f1", // fundo leve azul-esverdeado para destaque suave
+    padding: 6,
+    borderRadius: 25,
+    borderWidth: 1.5,
+    borderColor: "#00796b", // tom verde escuro para borda
     justifyContent: "center",
     alignItems: "center",
-    elevation: 4,
-    zIndex: 1,
+    shadowColor: "#00796b",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+  },
+  markerIcon: {
+    fontSize: 26,
+  },
+
+  carousel: {
+    position: "absolute",
+    bottom: 160,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 12,
+  },
+
+  card: {
+    backgroundColor: "white",
+    padding: 16,
+    marginBottom:20,
+    marginHorizontal: 8,
+    borderRadius: 20,
+    minWidth: 180,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
+  },
+  cardTitle: {
+    fontWeight: "700",
+    fontSize: 18,
+    color: "#2E7D32",
+  },
+  cardDetails: {
+    color: "#555",
+    marginTop: 6,
+    fontSize: 14,
   },
 });
+
 
 export default MapViewScreen;
