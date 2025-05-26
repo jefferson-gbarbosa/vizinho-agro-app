@@ -5,14 +5,15 @@ import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 import api from '@/services/api';
+import { useCart } from '@/contexts/CartContext';
 
 export default function SearchScreen() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const [cartItems, setCartItems] = useState<{ [key: string]: { quantity: number; item: any } }>({});
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const { cartItems, addItem, updateQuantity, removeItem } = useCart();
 
   const RECENT_SEARCHES_KEY = 'recentSearches';
 
@@ -27,12 +28,10 @@ export default function SearchScreen() {
 
   const saveRecentSearch = async (query: string) => {
     if (!query.trim()) return;
-
     try {
       const stored = await AsyncStorage.getItem(RECENT_SEARCHES_KEY);
       let updated = stored ? JSON.parse(stored) : [];
       updated = [query, ...updated.filter((item: string) => item !== query)].slice(0, 5);
-
       await AsyncStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
       setRecentSearches(updated);
     } catch (error) {
@@ -51,22 +50,25 @@ export default function SearchScreen() {
     }
   };
 
+  const clearRecentSearches = async () => {
+    try {
+      await AsyncStorage.removeItem(RECENT_SEARCHES_KEY);
+      setRecentSearches([]);
+    } catch (error) {
+      console.error('Erro ao limpar buscas recentes', error);
+    }
+  };
+
   const fetchProducts = async (query: string) => {
     if (!query.trim()) return;
     setLoading(true);
     try {
-      const response = await api.get('/products', {
-        params: { search: query },
-      });
+      const response = await api.get('/products', { params: { search: query } });
       setProducts(response.data);
       saveRecentSearch(query);
     } catch (error) {
       console.error('Erro ao buscar produtos:', error);
-      Toast.show({
-        type: 'error',
-        text1: 'Erro ao buscar produtos',
-        position: 'bottom',
-      });
+      Toast.show({ type: 'error', text1: 'Erro ao buscar produtos', position: 'bottom' });
     } finally {
       setLoading(false);
     }
@@ -81,71 +83,67 @@ export default function SearchScreen() {
   }, []);
 
   const addToCart = (product: any) => {
-    setCartItems(prev => ({
-      ...prev,
-      [product.id]: {
-        quantity: prev[product.id] ? prev[product.id].quantity + 1 : 1,
-        item: product,
-      },
-    }));
+    addItem({
+      id: product.id,
+      name: product.nome,
+      price: product.preco,
+      quantity: 1,
+      farmer: product.produtorId || '',
+    });
     showToast(`${product.nome} adicionado ao carrinho`);
   };
 
   const removeFromCart = (productId: string) => {
-    setCartItems(prev => {
-      const newCart = { ...prev };
-      if (newCart[productId]) {
-        if (newCart[productId].quantity > 1) {
-          newCart[productId].quantity -= 1;
-        } else {
-          delete newCart[productId];
-        }
-      }
-      return newCart;
-    });
+    const item = cartItems.find(item => item.id === productId);
+    if (!item) return;
+
+    if (item.quantity > 1) {
+      updateQuantity(productId, item.quantity - 1);
+    } else {
+      removeItem(productId);
+    }
   };
 
-  const renderItem = ({ item }: { item: any }) => (
-    <View style={styles.resultItem}>
-      <MaterialCommunityIcons name="food-apple" size={24} color="#8a9b68" />
-      <View style={styles.itemInfo}>
-        <Text style={styles.itemName}>{item.nome}</Text>
-        <Text style={styles.itemDetails}>R$ {item.preco.toFixed(2)}</Text>
-      </View>
+  const renderItem = ({ item }: { item: any }) => {
+    const cartItem = cartItems.find(ci => ci.id === item.id);
 
-      {cartItems[item.id] ? (
-        <View style={styles.quantityControls}>
-          <TouchableOpacity
-            style={styles.quantityButton}
-            onPress={() => removeFromCart(item.id)}
-            accessibilityLabel={`Diminuir quantidade de ${item.nome}`}
-          >
-            <MaterialCommunityIcons name="minus" size={16} color="#4a7c59" />
-          </TouchableOpacity>
-          <Text style={styles.quantityText}>{cartItems[item.id].quantity}</Text>
-          <TouchableOpacity
-            style={styles.quantityButton}
-            onPress={() => addToCart(item)}
-            accessibilityLabel={`Aumentar quantidade de ${item.nome}`}
-          >
-            <MaterialCommunityIcons name="plus" size={16} color="#4a7c59" />
-          </TouchableOpacity>
+    return (
+      <View style={styles.resultItem}>
+        <MaterialCommunityIcons name="food-apple" size={24} color="#8a9b68" />
+        <View style={styles.itemInfo}>
+          <Text style={styles.itemName}>{item.nome}</Text>
+          <Text style={styles.itemDetails}>R$ {item.preco.toFixed(2)}</Text>
         </View>
-      ) : (
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => addToCart(item)}
-          accessibilityLabel={`Adicionar ${item.nome} ao carrinho`}
-        >
-          <Text style={styles.addButtonText}>Adicionar</Text>
-        </TouchableOpacity>
-      )}
-    </View>
-  );
+
+        {cartItem ? (
+          <View style={styles.quantityControls}>
+            <TouchableOpacity onPress={() => removeFromCart(item.id)} style={styles.quantityButton}>
+              <MaterialCommunityIcons name="minus" size={16} color="#4a7c59" />
+            </TouchableOpacity>
+            <Text style={styles.quantityText}>{cartItem.quantity}</Text>
+            <TouchableOpacity onPress={() => addToCart(item)} style={styles.quantityButton}>
+              <MaterialCommunityIcons name="plus" size={16} color="#4a7c59" />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <TouchableOpacity onPress={() => addToCart(item)} style={styles.addButton}>
+            <Text style={styles.addButtonText}>Adicionar</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+  };
 
   const renderRecentSearches = () => (
     <>
-      <Text style={styles.sectionTitle}>Buscas recentes</Text>
+      <View style={styles.recentHeader}>
+        <Text style={styles.sectionTitle}>Buscas recentes</Text>
+        {recentSearches.length > 0 && (
+          <TouchableOpacity onPress={clearRecentSearches}>
+            <Text style={styles.clearText}>Limpar</Text>
+          </TouchableOpacity>
+        )}
+      </View>
       <View style={styles.recentSearches}>
         {recentSearches.map((search, index) => (
           <TouchableOpacity
@@ -155,7 +153,6 @@ export default function SearchScreen() {
               setSearchQuery(search);
               fetchProducts(search);
             }}
-            accessibilityLabel={`Buscar por ${search}`}
           >
             <MaterialCommunityIcons name="history" size={20} color="#8a9b68" />
             <Text style={styles.recentSearchText}>{search}</Text>
@@ -167,9 +164,8 @@ export default function SearchScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton} accessibilityLabel="Voltar para a tela anterior">
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <MaterialCommunityIcons name="arrow-left" size={24} color="#4a7c59" />
         </TouchableOpacity>
         <View style={styles.searchInputContainer}>
@@ -184,42 +180,51 @@ export default function SearchScreen() {
             autoFocus
           />
           {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery('')} accessibilityLabel="Limpar campo de busca">
+            <TouchableOpacity onPress={() => setSearchQuery('')}>
               <MaterialCommunityIcons name="close" size={20} color="#8a9b68" />
             </TouchableOpacity>
           )}
         </View>
       </View>
 
-      {/* Conteúdo */}
       <View style={styles.content}>
         {searchQuery.length === 0 ? (
           renderRecentSearches()
         ) : loading ? (
           <ActivityIndicator size="large" color="#4a7c59" />
         ) : (
-          <FlatList
-            data={products}
-            renderItem={renderItem}
-            keyExtractor={(item) => item.id.toString()}
-            ListEmptyComponent={
-              <Text style={styles.noResults}>Nenhum produto encontrado para {searchQuery}</Text>
-            }
-            contentContainerStyle={styles.listContent}
-          />
+          <>
+            {products.length > 0 && (
+              <Text style={styles.resultCount}>
+                {products.length} resultado{products.length > 1 ? 's' : ''} encontrado{products.length > 1 ? 's' : ''}
+              </Text>
+            )}
+            <FlatList
+              data={products}
+              renderItem={renderItem}
+              keyExtractor={(item) => item.id.toString()}
+              ListEmptyComponent={
+                <View style={styles.emptyContainer}>
+                  <Text style={styles.noResults}>Nenhum produto encontrado para {searchQuery}</Text>
+                  <TouchableOpacity onPress={() => fetchProducts(searchQuery)} style={styles.retryButton}>
+                    <Text style={styles.retryText}>Tentar novamente</Text>
+                  </TouchableOpacity>
+                </View>
+              }
+              contentContainerStyle={styles.listContent}
+            />
+          </>
         )}
       </View>
 
-      {/* Carrinho */}
-      {Object.keys(cartItems).length > 0 && (
+      {cartItems.length > 0 && (
         <TouchableOpacity
           style={styles.cartButton}
           onPress={() => router.push('/(consumer)/shop/cart')}
-          accessibilityLabel="Ver carrinho"
         >
           <MaterialCommunityIcons name="cart" size={24} color="#fff" />
           <Text style={styles.cartButtonText}>
-            Ver Carrinho ({Object.values(cartItems).reduce((acc, curr) => acc + curr.quantity, 0)})
+            Ver Carrinho ({cartItems.reduce((acc, curr) => acc + curr.quantity, 0)})
           </Text>
         </TouchableOpacity>
       )}
@@ -229,11 +234,7 @@ export default function SearchScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-    paddingTop:40
-  },
+  container: { flex: 1, backgroundColor: '#f8f9fa', paddingTop: 40 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -242,9 +243,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#eaeaea',
   },
-  backButton: {
-    marginRight: 16,
-  },
+  backButton: { marginRight: 16 },
   searchInputContainer: {
     flex: 1,
     flexDirection: 'row',
@@ -254,28 +253,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
   },
-  searchInput: {
-    flex: 1,
-    marginLeft: 10,
-    fontSize: 16,
-    color: '#333',
-  },
-  content: {
-    flex: 1,
-    padding: 16,
-  },
-  listContent: {
-    paddingBottom: 80, // Espaço para o botão do carrinho
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#666',
+  searchInput: { flex: 1, marginLeft: 10, fontSize: 16, color: '#333' },
+  content: { flex: 1, padding: 16 },
+  listContent: { paddingBottom: 80 },
+  recentHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 16,
   },
-  recentSearches: {
-    marginBottom: 24,
-  },
+  sectionTitle: { fontSize: 16, fontWeight: '600', color: '#666' },
+  clearText: { color: '#4a7c59', fontSize: 14, fontWeight: '500' },
+  resultCount: { fontSize: 14, color: '#555', marginBottom: 8 },
+  recentSearches: { marginBottom: 24 },
   recentSearchItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -283,11 +273,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },
-  recentSearchText: {
-    marginLeft: 12,
-    fontSize: 16,
-    color: '#333',
-  },
+  recentSearchText: { marginLeft: 12, fontSize: 16, color: '#333' },
   resultItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -301,36 +287,16 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  itemInfo: {
-    flex: 1,
-    marginLeft: 16,
-  },
-  itemName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
-  },
-  itemDetails: {
-    fontSize: 14,
-    color: '#666',
-  },
-  noResults: {
-    textAlign: 'center',
-    marginTop: 32,
-    fontSize: 16,
-    color: '#666',
-  },
+  itemInfo: { flex: 1, marginLeft: 16 },
+  itemName: { fontSize: 16, fontWeight: '600', color: '#333', marginBottom: 4 },
+  itemDetails: { fontSize: 14, color: '#666' },
   addButton: {
     backgroundColor: '#4a7c59',
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 6,
   },
-  addButtonText: {
-    color: '#fff',
-    fontWeight: '500',
-  },
+  addButtonText: { color: '#fff', fontWeight: '500' },
   quantityControls: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -338,13 +304,8 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     padding: 4,
   },
-  quantityButton: {
-    padding: 4,
-  },
-  quantityText: {
-    marginHorizontal: 8,
-    fontWeight: '500',
-  },
+  quantityButton: { padding: 4 },
+  quantityText: { marginHorizontal: 8, fontWeight: '500' },
   cartButton: {
     position: 'absolute',
     bottom: 80,
@@ -358,10 +319,15 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     elevation: 3,
   },
-  cartButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-    marginLeft: 8,
-    fontSize: 16,
+  cartButtonText: { color: '#fff', fontWeight: '600', marginLeft: 8, fontSize: 16 },
+  noResults: { textAlign: 'center', fontSize: 16, color: '#666' },
+  emptyContainer: { alignItems: 'center', marginTop: 32 },
+  retryButton: {
+    marginTop: 12,
+    backgroundColor: '#4a7c59',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 6,
   },
+  retryText: { color: '#fff', fontWeight: '600' },
 });
