@@ -21,9 +21,6 @@ type Producer = {
   name: string;
   latitude: number;
   longitude: number;
-  type: string;
-  price: number;
-  image: string | null;
   distance?: string;
   products: Product[];
 };
@@ -81,7 +78,7 @@ const ConsumerDashboard = () => {
           const lat = Number(item.latitude);
           const lon = Number(item.longitude);
           const distanceKm = getDistanceInKm(userLat, userLon, lat, lon);
-
+        
           return {
             id: String(item.id),
             name: item.nome || "Produtor sem nome",
@@ -91,7 +88,14 @@ const ConsumerDashboard = () => {
             price: item.preco || 0,
             image: item.foto || null,
             distance: `${distanceKm.toFixed(2)} km`,
-            products: item.products || [], 
+            products: item.products.map((p: any) => ({
+              id: String(p.id),
+              nome:p.nome,
+              preco: Number(p.preco),
+              quantidade: Number(p.quantidade),
+              tipo: p.tipo,
+              foto: p.foto,
+            })),
           };
         });
         
@@ -168,7 +172,8 @@ const ConsumerDashboard = () => {
                       key={`${farmer.id}-${index}`}
                       style={styles.productCard}
                       onPress={() => router.push(`/products/${farmer.id}`)}
-                    >
+                    > 
+                   
                       <Image
                         source={
                           product.foto
