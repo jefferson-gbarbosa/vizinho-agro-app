@@ -15,7 +15,11 @@
        "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION"
-      ]
+      ],
+      "navigationBar": {
+        "backgroundColor": "#D9D9D9",
+        "barStyle": "dark-content"
+      }
     },
     "web": {
       "bundler": "metro",
