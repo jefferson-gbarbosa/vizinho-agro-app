@@ -12,7 +12,8 @@ import {
   Alert, 
   Platform, 
   ActivityIndicator, 
-  StyleSheet 
+  StyleSheet ,
+  Linking
 } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
@@ -87,6 +88,16 @@ export default function LoginFarmerScreen() {
   const handleCadastro = () => {
     router.push('/(auth)/register-farmer');
   };
+
+  const handleForgotPassword = () => {
+    const phone = '5588912345678'; // número do WhatsApp do projeto
+    const message = encodeURIComponent('Olá! Esqueci minha senha e preciso de ajuda para redefini-la.');
+    const url = `https://wa.me/${phone}?text=${message}`;
+
+    Linking.openURL(url).catch(() =>
+      Alert.alert('Erro', 'Não foi possível abrir o WhatsApp. Verifique se ele está instalado.')
+    );
+  };
   
   return (
     <KeyboardAvoidingView
@@ -157,7 +168,7 @@ export default function LoginFarmerScreen() {
         </TouchableOpacity>
         {/* Links úteis */}
         <View style={styles.linksContainer}>
-          <TouchableOpacity onPress={() => router.push('/')}>
+          <TouchableOpacity onPress={handleForgotPassword}>
             <Text style={styles.linkText}>Esqueci minha senha</Text>
           </TouchableOpacity>
           
