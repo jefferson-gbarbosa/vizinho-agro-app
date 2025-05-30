@@ -11,7 +11,6 @@ import { router } from 'expo-router';
 const Home = () => {
   return (
     <View style={styles.container}>
-      {/* Logo */}
       <Image 
         source={require('@/assets/images/logo.png')} 
         style={styles.logo}
@@ -21,7 +20,6 @@ const Home = () => {
       <Text style={styles.titulo}>Bem-vindo ao Vizinho Agro</Text>
       <Text style={styles.subtitulo}>Conectando produtores e consumidores locais</Text>
 
-      {/* Botões principais */}
       <View style={styles.botoesContainer}>
         <TouchableOpacity 
           style={[styles.botao, styles.botaoAgricultor]}
@@ -37,7 +35,6 @@ const Home = () => {
           <Text style={styles.textoBotao}>Sou Consumidor</Text>
         </TouchableOpacity>
       </View>
-      {/* Rodapé */}
       <Text style={styles.rodape}>Distrito de Custódio, Quixadá-CE</Text>
     </View>
   );

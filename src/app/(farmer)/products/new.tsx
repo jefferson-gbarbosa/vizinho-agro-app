@@ -73,14 +73,12 @@ export default function NewProductScreen(){
     }
   };
 
-  // Função para lidar com mudança de data
   const onDateChange = (event: any, selectedDate?: Date) => {
     const currentDate = selectedDate || untilDate;
     setShowDatePicker(false);
     setUntilDate(currentDate);
   };
 
-  // Função para enviar o formulário
   const handleSubmit = () => {
     if (!price || !quantity) {
       Alert.alert('Erro', 'Preço e quantidade são obrigatórios');
@@ -104,8 +102,6 @@ export default function NewProductScreen(){
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Cadastro de Produto</Text>
-
-      {/* Seletor de Categoria */}
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Categoria</Text>
         <View style={styles.pickerContainer}>
@@ -120,8 +116,6 @@ export default function NewProductScreen(){
           </Picker>
         </View>
       </View>
-
-      {/* Preço */}
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Preço (R$)</Text>
         <TextInput
@@ -133,7 +127,6 @@ export default function NewProductScreen(){
         />
       </View>
 
-      {/* Quantidade */}
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Quantidade Disponível</Text>
         <TextInput
@@ -144,8 +137,6 @@ export default function NewProductScreen(){
           onChangeText={setQuantity}
         />
       </View>
-
-      {/* Upload de Imagem */}
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Foto do Produto</Text>
         <View style={styles.imageButtonsContainer}>
@@ -166,8 +157,6 @@ export default function NewProductScreen(){
           <Image source={{ uri: image }} style={styles.imagePreview} resizeMode="contain" />
         )}
       </View>
-
-      {/* Disponibilidade */}
       <View style={styles.availabilityContainer}>
         <Text style={styles.label}>Disponibilidade</Text>
         <View style={styles.availabilityButtonsContainer}>
@@ -207,15 +196,13 @@ export default function NewProductScreen(){
                 value={untilDate}
                 mode="date"
                 display="default"
-                // onChange={onDateChange}
+                onChange={onDateChange}
                 minimumDate={new Date()}
               />
             )}
           </View>
         )}
       </View>
-
-      {/* Botão de Cadastro */}
       <TouchableOpacity
         style={styles.submitButton}
               onPress={handleSubmit}>
@@ -296,13 +283,13 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   cameraButtonHover: {
-    backgroundColor: '#6D4C41', // Terra Queimada mais escuro
+    backgroundColor: '#6D4C41',
   },
   galleryButton: {
     backgroundColor: '#FFD54F',
   },
   galleryButtonHover: {
-    backgroundColor: '#FFC107', // Amarelo Sol mais vibrante
+    backgroundColor: '#FFC107', 
   },
   buttonText: {
     color: '#fff',
@@ -356,8 +343,8 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   submitButtonHover: {
-    backgroundColor: '#FFD54F', // Amarelo Sol
-    shadowColor: '#2E7D32',    // Verde Sertão como sombra
+    backgroundColor: '#FFD54F', 
+    shadowColor: '#2E7D32',    
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
@@ -369,7 +356,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   backButton: {
-    backgroundColor: '#8D6E63', // Terra Queimada
+    backgroundColor: '#8D6E63', 
     paddingVertical: 12,
     borderRadius: 4,
     alignItems: 'center',
@@ -377,7 +364,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   backButtonText: {
-    color: '#FAFAFA', // Branco Algodão
+    color: '#FAFAFA', 
     fontWeight: '600',
   },
 });

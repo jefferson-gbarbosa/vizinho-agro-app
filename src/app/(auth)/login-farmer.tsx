@@ -90,7 +90,7 @@ export default function LoginFarmerScreen() {
   };
 
   const handleForgotPassword = () => {
-    const phone = '5588912345678'; // número do WhatsApp do projeto
+    const phone = '5588994920999'; 
     const message = encodeURIComponent('Olá! Esqueci minha senha e preciso de ajuda para redefini-la.');
     const url = `https://wa.me/${phone}?text=${message}`;
 
@@ -109,8 +109,6 @@ export default function LoginFarmerScreen() {
         <Text style={styles.subtitle}>
            Produtor cadastrado
         </Text>
-
-        {/* Campo Telefone */}
         <View style={styles.inputContainer}>
           <MaterialCommunityIcons name="phone" size={20} color="#8D6E63" />
            <Controller
@@ -132,7 +130,6 @@ export default function LoginFarmerScreen() {
         {errors.telefone && (
           <Text style={styles.error}>{errors.telefone.message}</Text>
         )}
-        {/* Campo Senha */}
         <View style={styles.inputContainer}>
           <MaterialCommunityIcons name="lock" size={20} color="#8D6E63" />
          <Controller
@@ -151,7 +148,6 @@ export default function LoginFarmerScreen() {
         />
         </View>
         {errors.senha && <Text style={styles.error}>{errors.senha.message}</Text>}
-        {/* Botão de Login */}
          <TouchableOpacity
             style={styles.loginButton}
             onPress={handleSubmit(onSubmit)}
@@ -166,7 +162,6 @@ export default function LoginFarmerScreen() {
               </>
             )}
         </TouchableOpacity>
-        {/* Links úteis */}
         <View style={styles.linksContainer}>
           <TouchableOpacity onPress={handleForgotPassword}>
             <Text style={styles.linkText}>Esqueci minha senha</Text>

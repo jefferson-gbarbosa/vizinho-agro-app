@@ -123,7 +123,6 @@ const ConsumerDashboard = () => {
   return (
    <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
-        {/* Header */}
         <View style={styles.header}>
           <View>
             <Text style={styles.greeting}>Bom dia, consumidor!</Text>
@@ -139,7 +138,6 @@ const ConsumerDashboard = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Barra de Pesquisa */}
         <TouchableOpacity
           style={styles.searchBar}
           onPress={() => router.push('/(consumer)/search')}
@@ -148,9 +146,7 @@ const ConsumerDashboard = () => {
           <Text style={styles.searchText}>Buscar produtos ou agricultores...</Text>
         </TouchableOpacity>
 
-        {/* Conteúdo Principal */}
         <ScrollView style={styles.content}>
-          {/* Seção: Produtos em Destaque */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Produtos em Destaque</Text>
@@ -173,7 +169,6 @@ const ConsumerDashboard = () => {
                       style={styles.productCard}
                       onPress={() => router.push(`/products/${farmer.id}`)}
                     > 
-                   
                       <Image
                         source={
                           product.foto

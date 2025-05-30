@@ -21,7 +21,6 @@ const ProductDetail = () => {
   const { addItem } = useCart();
 
   useEffect(() => {
-    // Resetar estado ao trocar produto
     setIsInCart(false);
     setQuantity(1);
 

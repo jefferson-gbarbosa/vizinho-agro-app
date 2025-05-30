@@ -56,9 +56,6 @@ export default function ConsumerFiltersScreen() {
 
       setResults(response.data);
       setSearched(true);
-
-      // Opcional: limpa o campo após busca
-      // setProductName("");
     } catch (error: any) {
       Alert.alert("Erro", error.message || "Não foi possível buscar os dados.");
     } finally {

@@ -130,14 +130,12 @@ export default function DashboardAgricultor() {
   return (
     <SafeAreaView style={{paddingTop:20}}>
       <ScrollView contentContainerStyle={styles.container}>
-      {/* Cabeçalho */}
-      <View style={styles.header}>
+         <View style={styles.header}>
         <Text style={styles.welcomeText}>Bem-vindo, {selectedProducer?.nome || 'Produtor'}!</Text>
         <TouchableOpacity onPress={() => router.push('/(farmer)/profile')}>
           <MaterialCommunityIcons name="account-circle" size={40} color="#2E7D32" />
         </TouchableOpacity>
       </View>
-      {/* Métricas */}
       <View style={styles.metricsContainer}>
         {Object.entries(metrics).map(([key, value]) => (
           <TouchableOpacity key={key} onPress={() => openEditModal(key as keyof Metrics)}>
@@ -150,15 +148,12 @@ export default function DashboardAgricultor() {
           </TouchableOpacity>
         ))}
       </View>
-
-      {/* Ações Rápidas */}
       <View style={styles.quickActions}>
         <Text style={styles.sectionTitle}>Ações Rápidas</Text>
         <View style={styles.actionsRow}>
           <ActionButton icon="plus" label="Novo Produto" onPress={() => router.push('/(farmer)/products/new')} />
         </View>
       </View>
-      {/* Modal */}
       <Modal visible={modalVisible} animationType="slide" transparent onRequestClose={() => setModalVisible(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -192,9 +187,6 @@ export default function DashboardAgricultor() {
           </View>
         </View>
       </Modal>
-
-
-      {/* Logout */}
       <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
         <MaterialCommunityIcons name="logout" size={20} color="#8D6E63" />
         <Text style={styles.logoutText}>Sair da conta</Text>
@@ -204,7 +196,6 @@ export default function DashboardAgricultor() {
   );
 }
 
-// Ícones para métricas
 const getMetricIcon = (key: string) => {
   switch (key) {
     case 'produtos_cadastrados':
@@ -238,7 +229,6 @@ const ActionButton = ({ icon, label, onPress }: any) => (
   </TouchableOpacity>
 );
 
-// Estilos
 const styles = StyleSheet.create({
   container: {
     height: '100%',
@@ -308,7 +298,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   actionButton: {
-    width: '48%', // Ajuste para 2 colunas
+    width: '48%',
     alignItems: 'center',
     backgroundColor: '#FFF',
     borderRadius: 10,

@@ -31,7 +31,7 @@ const ProductsPage = () => {
 
           farmer.products.forEach((product: any, index: number) => {
             fetchedProducts.push({
-              id: `${farmer.id}-${index}`, // único na tela
+              id: `${farmer.id}-${index}`, 
               producerId: farmer.id,
               productName: product.nome || 'Produto sem nome',
               price: Number(product.preco) || 0,

@@ -16,7 +16,6 @@ type Producer = {
   products: number;
 };
 
-// Função para calcular distância em km entre dois pontos geográficos
 function getDistanceInKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const toRad = (value: number) => (value * Math.PI) / 180;
   const R = 6371;
@@ -89,7 +88,6 @@ const FarmersList = () => {
 
   return (
     <View style={styles.container}>
-      {/* Botão de voltar */}
       <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
         <MaterialCommunityIcons name="arrow-left" size={28} color="#4a7c59" />
       </TouchableOpacity>

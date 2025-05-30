@@ -79,7 +79,7 @@ const MapViewScreen = () => {
   if (name.includes("leite")) return "🥛";
   if (name.includes("ovo")) return "🥚";
 
-  return "🧑‍🌾"; // ícone genérico
+  return "🧑‍🌾";
 };
  
   const loadProducers = async (userLat: number, userLng: number) => {
@@ -248,7 +248,7 @@ const mapStyle = [
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f0f4f8", // tom suave e claro para background, mais moderno que branco puro
+    backgroundColor: "#f0f4f8",
   },
   map: {
     flex: 1,
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 16,
-    color: "#2E7D32", // usar a cor principal do app para destaque
+    color: "#2E7D32", 
     fontSize: 16,
     fontWeight: "600",
     fontFamily: "sans-serif",
@@ -275,14 +275,13 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   errorText: {
-    color: "#bf360c", // vermelho escuro para erro, contraste forte
+    color: "#bf360c",
     fontSize: 16,
     textAlign: "center",
     fontWeight: "600",
     fontFamily: "sans-serif",
   },
 
-  // Botão que centraliza o mapa na localização atual
   centerButton: {
     position: "absolute",
     top: 100,
@@ -299,15 +298,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-
-  // Botão para acessar o dashboard
   dashboardButton: {
     position: "absolute",
     top: 100,
     left: 20,
     backgroundColor: "white",
     padding: 12,
-    borderRadius: 28, // círculo perfeito
+    borderRadius: 28, 
     justifyContent: "center",
     alignItems: "center",
     elevation: 8,
@@ -317,7 +314,6 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     zIndex: 10,
   },
-
   filterButton: {
     position: "absolute",
     bottom: 80,
@@ -339,13 +335,12 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 17,
   },
-
   markerContainer: {
-    backgroundColor: "#e0f2f1", // fundo leve azul-esverdeado para destaque suave
+    backgroundColor: "#e0f2f1", 
     padding: 6,
     borderRadius: 25,
     borderWidth: 1.5,
-    borderColor: "#00796b", // tom verde escuro para borda
+    borderColor: "#00796b", 
     justifyContent: "center",
     alignItems: "center",
     shadowColor: "#00796b",
@@ -356,7 +351,6 @@ const styles = StyleSheet.create({
   markerIcon: {
     fontSize: 26,
   },
-
   carousel: {
     position: "absolute",
     bottom: 160,
@@ -364,7 +358,6 @@ const styles = StyleSheet.create({
     right: 0,
     paddingHorizontal: 12,
   },
-
   card: {
     backgroundColor: "white",
     padding: 16,

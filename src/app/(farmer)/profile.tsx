@@ -158,7 +158,6 @@ export default function PerfilAgricultor() {
   return (
     <SafeAreaView>
       <ScrollView contentContainerStyle={styles.container}>
-      {/* Cabeçalho */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
           <MaterialCommunityIcons name="arrow-left" size={24} color="#2E7D32" />
@@ -172,8 +171,6 @@ export default function PerfilAgricultor() {
           />
         </TouchableOpacity>
       </View>
-
-      {/* Foto de Perfil */}
       <TouchableOpacity 
         style={styles.photoContainer}
         onPress={editMode ? pickImage : () => {}}
@@ -191,7 +188,6 @@ export default function PerfilAgricultor() {
         )}
       </TouchableOpacity>
 
-      {/* Formulário de Edição */}
       <View style={styles.form}>
         <Input
           label="Nome completo"
@@ -233,8 +229,6 @@ export default function PerfilAgricultor() {
           </View>
         )}
       </View>
-
-      {/* Rodapé */}
       <TouchableOpacity 
         style={styles.logoutButton}
         onPress={handleLogout}

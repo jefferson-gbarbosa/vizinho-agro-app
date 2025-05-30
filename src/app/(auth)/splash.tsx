@@ -46,7 +46,6 @@ export default function SplashScreen() {
 
       const token = await AsyncStorage.getItem('producerToken');
       if (!token) {
-        // Sem token, vai para login do produtor
         router.replace('/(auth)/home');
         return;
       }
@@ -67,8 +66,6 @@ export default function SplashScreen() {
         router.replace('/(auth)/login-farmer');
         return false;
       }
-
-      // fallback para login caso algo falhe
       router.replace('/(auth)/home');
 
     } catch (err) {
